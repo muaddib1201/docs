@@ -40,3 +40,41 @@ html body pre code {
 #table-of-contents::-webkit-scrollbar-track {
   background: transparent;
 }
+
+/* Align custom Card icon SVGs with Mint built-in icons:
+ * built-ins are rendered as <svg> with mask-image + bg-primary / dark:bg-primary-light,
+ * custom icons are rendered as <img src=...> which shows the SVG's hardcoded fill.
+ * Here we promote the <img> into a mask-image element and drive its color from the
+ * same primary / primary-light tokens the built-ins use. The transparent SVG data URI
+ * in `content` hides the original image pixels so the masked background-color is what
+ * actually appears on screen. */
+[data-component-part="card-icon"] img[src^="/images/icons/api-"][src$=".svg"] {
+  content: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1 1'/%3E");
+  background-color: #1857FF;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+[data-component-part="card-icon"] img[src="/images/icons/api-print.svg"] {
+  -webkit-mask-image: url("/images/icons/api-print.svg");
+  mask-image: url("/images/icons/api-print.svg");
+}
+
+[data-component-part="card-icon"] img[src="/images/icons/api-scan.svg"] {
+  -webkit-mask-image: url("/images/icons/api-scan.svg");
+  mask-image: url("/images/icons/api-scan.svg");
+}
+
+[data-component-part="card-icon"] img[src="/images/icons/api-pdf.svg"] {
+  -webkit-mask-image: url("/images/icons/api-pdf.svg");
+  mask-image: url("/images/icons/api-pdf.svg");
+}
+
+html.dark [data-component-part="card-icon"] img[src^="/images/icons/api-"][src$=".svg"],
+.dark [data-component-part="card-icon"] img[src^="/images/icons/api-"][src$=".svg"] {
+  background-color: #DFF8F1;
+}
