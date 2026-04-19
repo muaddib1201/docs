@@ -1,0 +1,100 @@
+---
+title: Error Codes
+description: Error response structure for OneSDK HTTP interfaces and enum descriptions for the `result` fields of major APIs.
+---
+
+# Error Codes
+
+## HTTP Error Response Structure
+
+When an unexpected error occurs, all interfaces return the same JSON structure:
+
+```json
+{
+  "error": "error_type",
+  "message": "error_details"
+}
+```
+
+| Field | Type | Description |
+|------|------|------|
+| `error` | `string` | Error type identifier |
+| `message` | `string` | Detailed error description |
+
+## Print Job Result Error Codes
+
+The `result` field of `GET /print/model_deps/print_result/{job_id}`:
+
+| Value | Description |
+|----|------|
+| `success` | Success |
+| `error_timeout` | Timeout |
+| `error_device_not_found` | Target device not found |
+| `error_model_name_mismatch` | Model name mismatch |
+| `error_connection_interrupt` | Connection interrupted |
+| `error_unsupported` | This operation is not supported by the current model |
+| `error_unsupported_firmware` | Firmware version is not supported |
+| `error_others` | Other error |
+
+## Scan Job Result Error Codes
+
+The `job_info.result` field of `GET /scan/{job_id}`:
+
+| Value | Description |
+|----|------|
+| `success` | Success |
+| `cancel_from_host` | Canceled from host |
+| `cancel_from_device` | Canceled from device |
+| `error_others` | Other error |
+| `error_timeout` | Timeout |
+| `error_connection_failed` | Connection failed |
+| `error_connection_interrupt` | Connection interrupted |
+| `error_device_busy` | Device busy |
+| `error_filesystem` | File system error |
+| `error_adf_jam` | ADF jam |
+| `error_adf_cover_open` | ADF cover open |
+| `error_adf_no_paper_present` | No paper in ADF |
+| `error_fb_cover_open` | Flatbed cover open |
+| `error_paper_size_not_support` | Paper size not supported |
+| `error_adf_pick_up_paper_fail` | ADF pickup failed |
+| `error_need_calibration` | Calibration required |
+| `error_disable` | Feature disabled |
+| `error_fatal` | Fatal error |
+
+## Device Status Query Error Codes
+
+The `result` field of `POST /device/status/get`:
+
+| Value | Description |
+|----|------|
+| `success` | Success |
+| `error_others` | Other error |
+| `error_unsupported` | Unsupported |
+| `error_device_not_found` | Device not found |
+| `error_timeout` | I/O timeout |
+| `error_connection_interrupt` | Connection interrupted |
+| `error_model_name_mismatch` | Model name mismatch |
+| `error_device_setting_closed` | Device settings are closed (the device rejected the query) |
+
+## Device SLP Query Error Codes
+
+The `result` field of `POST /device/slp/get`:
+
+| Value | Description |
+|----|------|
+| `success` | Success |
+| `error_timeout` | Timeout (the device did not respond or SLP is disabled) |
+| `error_model_name_mismatch` | Model name mismatch |
+| `error_others` | Other error |
+
+## Device Sleep Time Error Codes
+
+The `result` field of `POST /device/sleep_time`:
+
+| Value | Description |
+|----|------|
+| `success` | Success |
+| `error_others` | Other error |
+| `error_connection_failed` | Connection failed |
+| `error_timeout` | Timeout |
+| `error_command_failed` | Command execution failed |

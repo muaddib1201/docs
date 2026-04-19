@@ -1,0 +1,9 @@
+---
+title: Create Scan Job
+description: Create a scan job. Scan parameters must be configured according to the `scan_capability` of the target model returned by GET /devices/supported.
+openapi: openapi/onesdk-core.yaml POST /scan
+---
+
+<Note>
+  Available values for fields in `job_setting` depend on the target model's `scan_capability`. Capability differs by model, so always use the actual data returned by `GET /devices/supported` as the source of truth.
+</Note>

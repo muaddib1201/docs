@@ -1,0 +1,10 @@
+---
+title: Get Page BMP
+description: Render a specified page in a preview job as a BMP image and return it as a binary stream. Supports custom output size, scaling mode, and margins.
+openapi: openapi/onesdk-core.yaml POST /pdf/preview/{job_id}/{page_index}/bmp/get
+---
+
+<Note>
+  `margin` is measured in pixels and must satisfy `height > top + bottom` and `width > left + right`.
+  `margin.color` uses the format `0xRRGGBB`, with a default of `0xFFFFFF` (white). Introduced in version 0.0.29.
+</Note>

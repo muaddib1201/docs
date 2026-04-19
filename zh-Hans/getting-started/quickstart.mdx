@@ -1,0 +1,148 @@
+---
+title: 快速开始
+---
+
+<Tip>
+  本指南帮你快速跑通 Pantum SDK 的启动和首次设备发现。详细的集成步骤、参数说明和文件结构请参考 [示例工程](/getting-started/examples)。
+</Tip>
+
+## 支持平台
+
+| 平台 | 最低版本 | SDK 交付形式 |
+| --- | --- | --- |
+| Android | Android 8.0 及以上 | `onesdk.aar` |
+| OpenHarmony | OpenHarmony 4.1 及以上 | `onesdk.har` |
+| 国产系统 | — | `libonesdk.so` + `api.h` |
+
+## 开始使用
+
+<Steps titleSize="h5">
+  <Step title="启动 HTTP 服务">
+    将 SDK 文件和授权文件添加到工程后，在应用启动时调用启动接口。SDK 启动后以本地 HTTP 服务对外暴露所有能力。
+
+    <Tabs>
+      <Tab title="Android (Kotlin)">
+        在 `Application.onCreate()` 中调用：
+
+        ```kotlin
+        class App : Application() {
+            override fun onCreate() {
+                super.onCreate()
+                val isSuccess = LLDHttpSdk.initLLDHttpServer(this)
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:${LLDHttpSdk.port}"
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="Android (Java)">
+        在 `Application.onCreate()` 中调用：
+
+        ```java
+        public class App extends Application {
+            @Override
+            public void onCreate() {
+                super.onCreate();
+                boolean isSuccess = LLDHttpSdk.initLLDHttpServer(this);
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:" + LLDHttpSdk.port;
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="OpenHarmony (ArkTS)">
+        在应用入口调用：
+
+        ```typescript
+        const result = Server.shared.start_http_server(JSON.stringify({
+            port: 0,
+            remote_access: false,
+            authorization: "file://" + authorizationFilePath,
+            working_directory: workingDirectory,
+            log: { console: false, file: { path: logPath, max_size: 8, max_files: 1 } }
+        }));
+        ```
+      </Tab>
+      <Tab title="国产系统 (C++)">
+        引入 `api.h`，链接 `libonesdk.so`，调用 C API：
+
+        ```cpp
+        #include "api.h"
+
+        int main() {
+            const char* param = R"({
+                "port": 3883,
+                "remote_access": false,
+                "authorization": "/path/to/auth_file",
+                "working_directory": "/tmp/com.pantum.onesdk",
+                "log": { "console": false, "file": { "path": "/tmp/onesdk.log", "max_size": 8, "max_files": 1 } }
+            })";
+
+            const char* result = onesdk_start_http_server(param);
+            // 保持进程运行...
+            pause();
+            onesdk_stop_http_server();
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    启动成功后，后续接口统一访问：
+
+    ```text
+    http://127.0.0.1:{port}
+    ```
+
+    <Note>
+      `authorization` 路径在 Android/OpenHarmony 上须以 `file://` 开头；国产系统上可直接传文件路径，也支持传 `base64://` 编码的授权内容字符串。详见 [国产系统 Demo](/getting-started/examples/domestic)。
+    </Note>
+  </Step>
+
+  <Step title="验证服务是否可用">
+    请求根接口，确认本地服务已正常启动：
+
+    ```bash
+    curl -H "Connection: close" http://127.0.0.1:{port}/
+    ```
+
+    正常响应会包含 `meta.name`、`meta.version`、`modules.devices`、`modules.print`、`modules.scan` 等字段。
+
+    如果失败，检查：SDK 文件是否引入、授权文件路径是否正确、服务是否成功返回端口。
+  </Step>
+
+  <Step title="读取支持机型">
+    查询 SDK 当前支持的机型和打印能力，用于确认目标设备是否支持，以及后续打印参数的合法值来源：
+
+    ```bash
+    curl -H "Connection: close" http://127.0.0.1:{port}/devices/supported
+    ```
+
+    返回字段包含 `device_info`、`print_capability`、`scan_capability`、`fax_capability`。
+  </Step>
+
+  <Step title="搜索局域网设备">
+    发起网络设备搜索：
+
+    ```http
+    POST /devices/net
+    Content-Type: application/json
+
+    { "duration": 10, "interval": 2 }
+    ```
+
+    <Warning>
+      搜索结果为**流式数据**持续返回。打印作业、扫描作业的进度结果同样是流式接口，请注意处理方式。
+    </Warning>
+
+    拿到设备后，记录 `model_name` 和 `io`，`io` 是后续打印、扫描调用时的关键设备标识。
+  </Step>
+</Steps>
+
+## 下一步
+
+- [示例工程](/getting-started/examples) — 查看各平台完整集成步骤和文件路径
+- [Android Demo](/getting-started/examples/android) · [OpenHarmony Demo](/getting-started/examples/openharmony) · [国产系统 Demo](/getting-started/examples/domestic)
+- [设备发现](/sdk/device-discovery) · [打印任务](/sdk/print-jobs)
+- [API 概览](/api-reference/overview)

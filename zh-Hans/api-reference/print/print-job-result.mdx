@@ -1,0 +1,13 @@
+---
+title: 打印作业结果*
+description: 获取指定打印作业的打印结果，仅部分型号支持。
+openapi: openapi/onesdk-core.yaml GET /print/model_deps/print_result/{job_id}
+---
+
+<Warning>
+  仅部分型号支持此接口，详细支持情况可调用 [机型接口支持情况（CSV）](/api-reference/print/print-model-deps-csv) 下载 CSV 文件进行确认。
+</Warning>
+
+<Warning>
+  此接口调用过程中，禁止调用 `DELETE /print/{job_id}`，否则报 404 错误。
+</Warning>

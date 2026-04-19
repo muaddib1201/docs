@@ -1,0 +1,52 @@
+---
+title: Search
+description: Common issues related to USB device identification, libusb errors, and permission configuration.
+---
+
+# Search
+
+### How do I identify whether a USB device found during search is a printer?
+
+On Android, USB device identification is handled by the application-layer API, so the SDK cannot filter out non-printer USB devices. In most cases, the printer device name follows the format **printer model + Series**, for example: `M6100DW Series`.
+
+---
+
+### What should I do if a USB device cannot be found and hilog reports `LIBUSB_ERROR_ACCESS`?
+
+Check the following one by one:
+
+1. **Verify that the authorization file supports the device**: call "GET Supported Device List" to confirm that the current device is included in the device list supported by the SDK and authorization file.
+2. **Check USB device permissions**:
+   ```sh
+   ls -l /dev/bus/usb/<bus>/<device>
+   ```
+3. If the USB device does not have read/write permission, modify the device permission temporarily as shown below and try again.
+4. If the issue still cannot be resolved, contact the system vendor to configure USB permissions.
+
+<Warning>
+`busid` and `deviceid` are assigned by the system when the device is plugged in, and they may change after unplugging and reconnecting the device. The following method is only for temporarily setting USB permissions. For a permanent solution, consult the system vendor.
+</Warning>
+
+**Temporarily modify USB device permissions (example):**
+
+```sh
+# 1. Get the currently connected USB device information
+lsusb
+# Bus 001 Device 005: ID 232b:0835
+
+# 2. Modify device permissions (grant read/write access to all users)
+sudo chmod 666 /dev/bus/usb/001/005
+```
+
+---
+
+### What should I do if a USB device cannot be found and hilog reports `LIBUSB_ERROR_OTHER`?
+
+This error is usually caused by insufficient USB permissions. The handling is the same as for `LIBUSB_ERROR_ACCESS`:
+
+1. Run `lsusb` to get the printer's `busid` and `deviceid`.
+2. Temporarily grant permission with `chmod 666`:
+   ```sh
+   sudo chmod 666 /dev/bus/usb/<bus>/<device>
+   ```
+3. If the problem persists, consult the system vendor for a permanent USB permission configuration solution.

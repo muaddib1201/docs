@@ -1,0 +1,122 @@
+---
+title: 国产系统 Demo
+description: C++ 示例工程的文件结构、cmake 编译步骤与服务启动说明。
+---
+
+国产系统 SDK 以动态库 `libonesdk.so` 形式提供，通过 C API（`api.h`）暴露启动、停止和诊断接口，适用于支持 Linux 环境的国产系统应用。
+
+## 工程文件结构
+
+```text
+bin/
+└── main            ← 可执行文件
+lib/
+├── api.h           ← C API 头文件
+└── libonesdk.so    ← SDK 动态库
+example/
+├── main.cc         ← 示例源码
+└── CMakeLists.txt  ← 构建配置
+```
+
+---
+
+## C API
+
+`api.h` 暴露三个接口：
+
+| 接口 | 说明 |
+| --- | --- |
+| `onesdk_start_http_server(const char* setting)` | 启动 HTTP 服务，返回 JSON 字符串 |
+| `onesdk_stop_http_server()` | 停止服务，阻塞直至完成 |
+| `onesdk_http_server_diagnostic()` | 诊断服务状态并输出日志 |
+
+<Note>
+  国产系统的 `authorization` 字段支持两种传入方式：直接传**文件路径**（无需 `file://` 前缀），或传 `base64://` 开头的**授权内容编码字符串**。
+</Note>
+
+---
+
+## 集成步骤
+
+<Steps>
+  <Step title="快速验证（可选）">
+    无需编译，直接运行预编译产物验证 SDK 可用性：
+
+    ```bash
+    ./bin/main
+    ```
+  </Step>
+
+  <Step title="编译示例工程">
+    将 `api.h` 和 `libonesdk.so` 复制到 `example/` 目录，然后执行：
+
+    ```bash
+    cd example
+    mkdir build && cd build
+    cmake ..
+    make
+    ./main
+    ```
+  </Step>
+
+  <Step title="启动服务">
+    示例源码 `main.cc` 的核心逻辑如下：
+
+    ```cpp
+    #include "api.h"
+    #include <unistd.h>
+    #include <signal.h>
+
+    void signal_handler(int signum) { ; }
+
+    int main(int argc, char* argv[]) {
+        signal(SIGINT, signal_handler);
+
+        const char* param = R"({
+            "port": 3883,
+            "remote_access": false,
+            "authorization": "/path/to/auth_file",
+            "working_directory": "/tmp/com.pantum.onesdk",
+            "log": {
+                "console": false,
+                "file": {
+                    "path": "/tmp/com.pantum.onesdk.log",
+                    "max_size": 8,
+                    "max_files": 1
+                }
+            }
+        })";
+
+        // 也可通过命令行参数传入配置：./main '<json>'
+        if (argc > 1) param = argv[1];
+
+        const char* result = onesdk_start_http_server(param);
+
+        pause();   // 保持进程运行
+        onesdk_stop_http_server();
+        return 0;
+    }
+    ```
+  </Step>
+
+  <Step title="验证服务">
+    ```bash
+    # 验证服务可用
+    curl http://127.0.0.1:3883/
+
+    # 查询支持机型
+    curl http://127.0.0.1:3883/devices/supported
+
+    # 发起网络搜索（流式返回）
+    curl -X POST http://127.0.0.1:3883/devices/net \
+      -H "Content-Type: application/json" \
+      -d '{"duration": 10, "interval": 2}'
+    ```
+  </Step>
+</Steps>
+
+---
+
+## 参数与返回值
+
+启动参数和返回值的完整字段说明，参见 [示例工程 — 通用参考](/getting-started/examples#通用参考)。

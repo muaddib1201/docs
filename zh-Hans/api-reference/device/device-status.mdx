@@ -1,0 +1,19 @@
+---
+title: 获取设备状态
+description: 阻塞式获取指定设备的静态信息（版本、序列号等）和动态信息（耗材、状态列表、纸盒、页数统计等）。
+openapi: openapi/onesdk-core.yaml POST /device/status/get
+---
+
+<Note>
+  此接口为阻塞式调用，成功时立即返回，否则等待至超时。`io` 支持 IPv4、IPv6；USB 仅限 Linux、macOS、Android。
+</Note>
+
+<Note>
+  `dynamic.status[].name` 格式说明：信息（`STATUS_I_`）、警告（`STATUS_W_`）、错误（`STATUS_E_`）、故障（`STATUS_F_`）。若为 10 位十六进制字符串（如 `0x12345678`），表示 SDK 尚未支持该状态，可直接忽略。
+
+  `dynamic.status[].param` 的枚举值可通过 [设备状态列表（CSV）](/api-reference/device/device-status-csv) 下载 CSV 文件确认。
+</Note>
+
+<Note>
+  `result != success` 时，`static` 和 `dynamic` 均为 `null`。
+</Note>

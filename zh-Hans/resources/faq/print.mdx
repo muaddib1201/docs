@@ -1,0 +1,93 @@
+---
+title: 打印问题
+description: 打印作业错误码、进度说明、文件格式限制、自定义纸张等常见问题。
+---
+
+# 打印问题
+
+### 请求"打印作业（创建）"接口，为什么返回 409 错误码？
+
+409 错误码代表重复创建了打印作业任务，即上一次创建的打印作业还未完成，又继续请求"打印作业"接口。请按以下情况逐一排查：
+
+1. 是否创建打印任务后没有传入文件？如果没有传入文件，则必须传入正确的文件。
+2. 是否传入的是 PDF 加密文件且密码不正确？如果密码不正确，调用方需要传入正确的密码，或者调用取消打印接口后根据"打印作业（发送进度）"返回结构体中 `status` 的值再判断是否可以创建打印作业。
+3. 如果创建打印作业和传入文件都已成功，请确认"打印作业（发送进度）"返回结构体中 `status` 的值是否是 `completed` / `canceled` / `failed`，只有 `status` 为这三个值时，才可以继续创建打印作业。
+4. `GET 打印作业（打印结果）`返回的结果**不能**单独作为是否可以创建打印任务的依据，此接口仅代表打印机完成打印的结果，不代表 SDK 发送打印数据的结果。除非调用方能保证上一次创建的 `job_id` 与"GET 打印作业（打印结果）"的 `job_id` 一致，否则建议以第 3 点作为判断依据。
+
+---
+
+### 为什么 SDK 创建打印任务后，进度已上报完成，但打印机还在打印？
+
+SDK 上报的是 SDK 发送打印数据给打印机的进度，**不代表打印机真实的打印进度**。目前打印机固件不支持向 SDK 上报打印进度。部分机型支持向 SDK 返回打印结果，具体详见接口文档中"GET 打印作业（打印结果）"接口的说明。
+
+---
+
+### SDK 是否支持 Word、Excel、PPT 等其他格式的文档？
+
+不支持。SDK 目前只支持 **PDF 文档**和**图片**，图片格式支持 JPEG、PNG、BMP。如需打印其他格式的文档，调用方需自行将文档转换为 PDF 文件或支持格式的图片。
+
+---
+
+### SDK 是否支持同时打印多份 PDF 文档？
+
+不支持。每次打印作业只支持一份 PDF 文档，图片可以支持多张。如需打印多份 PDF 文档，调用方需自行完成 PDF 的拼接后再传入。
+
+---
+
+### 自定义纸张打印如何配置？
+
+**第一步**：调用"GET 支持设备列表"接口，确认 `print_capability.media_size` 可选值中是否包含 `Custom ({minWidth-maxWidth}x{minHeight-maxHeight}mm)` 格式的条目。例如：
+
+```json
+{
+  "print_capability": {
+    "media_size": [
+      "A4 (210x297mm)",
+      "Custom ({75-218}x{148-360}mm)"
+    ]
+  }
+}
+```
+
+`Custom ({75-218}x{148-360}mm)` 表示该机型支持自定义纸张，宽度范围 75–218 mm，高度范围 148–360 mm。
+
+**第二步**：调用"POST 打印作业（创建）"接口时，将 `job_setting.media_size` 设为自定义尺寸字符串，格式与 `print_capability.media_size` 中一致，例如纸张尺寸 99×210 mm：
+
+```json
+POST /print
+
+{
+  "job_target": {
+    "model_name": "xxx series",
+    "io": "ipv4://x.x.x.x"
+  },
+  "job_setting": {
+    "copies": 1,
+    "sides": "one_sided",
+    "media_size": "Custom (99x210mm)",
+    "media_type": "paper_plain"
+  }
+}
+```
+
+---
+
+### 传入图片文件后，再次调用打印接口报错怎么处理？
+
+"POST 打印作业（传入文件）"接口支持传入 PDF 或图片（BMP / JPEG / PNG）文件，且支持边打印边传入图片文件。
+
+SDK 在接收图片打印文件后，会**持续等待**传入图片文件，直至收到空数组才结束等待。因此，调用方在传入所有图片文件后，必须**再调用一次该接口并传入空数组**，表示图片文件传入结束。
+
+```ts
+// 图片打印
+for (let i = 0; i < printFile.length; i++) {
+  input.image.push({ path: printFile[i], rotation: 0 });
+}
+TestApi.inputPrintJobFile(jobId, input).then((response: Response) => {
+  // 传入空数组表示图片文件传入结束
+  input.image = [];
+  TestApi.inputPrintJobFile(jobId, input).then((response: Response) => {
+    // ...
+  });
+});
+```

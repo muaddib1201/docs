@@ -1,0 +1,17 @@
+---
+title: Get Device SLP Info (NET only)
+description: Retrieve raw SLP attribute information for a specified IPv4/IPv6 device through a blocking call.
+openapi: openapi/onesdk-core.yaml POST /device/slp/get
+---
+
+<Warning>
+  This interface supports only NET devices (IPv4/IPv6) and does not support USB.
+</Warning>
+
+<Warning>
+  If SLP is disabled on the device, meaning it does not allow discovery or probing, this interface will always fail with a timeout.
+</Warning>
+
+<Note>
+  `job_target.model_name` can be passed as an empty string `""` to skip model validation. If a non-empty string is passed and the actual model does not match, the response is `error_model_name_mismatch`.
+</Note>

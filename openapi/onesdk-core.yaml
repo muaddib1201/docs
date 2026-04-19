@@ -1,0 +1,2979 @@
+openapi: 3.1.0
+info:
+  title: Pantum OneSDK Core API
+  version: 1.0.0
+  description: Minimal OpenAPI spec for the core OneSDK endpoints.
+servers:
+  - url: http://127.0.0.1:{port}
+    description: Local OneSDK HTTP server
+    variables:
+      port:
+        default: "18088"
+        description: 端口号由 SDK 启动时动态分配并返回，每次启动可能不同。
+paths:
+  /:
+    get:
+      operationId: getServiceInfo
+      summary: 查询服务信息
+      description: 读取 OneSDK 服务元信息与模块状态，用于确认本地 HTTP 服务是否已经正常启动。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples: 
+              - close
+      responses:
+        "200":
+          description: 服务可用时返回服务元信息与模块列表。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ServiceInfoResponse"
+              example:
+                meta:
+                  name: onesdk
+                  version: 1.2.3
+                  build_time: "2025-01-01T00:00:00Z"
+                  git_branch: main
+                  git_commit_hash: abc1234
+                  git_commit_time: "2024-12-31T12:00:00Z"
+                  mode: release
+                  git_status_clean: true
+                  system: android
+                  system_version_min: "9.0"
+                  architecture: arm64
+                  macro: PANTUM_ONESDK_ANDROID
+                modules:
+                  core: []
+                  devices: []
+                  print: []
+                  scan: []
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /devices/supported:
+    get:
+      operationId: getSupportedDevices
+      summary: 读取支持机型
+      description: 读取当前 SDK 支持的设备机型与能力信息，是设备发现和参数构造的前置接口。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples: 
+              - close
+      responses:
+        "200":
+          description: 业务处理成功时返回支持机型列表以及打印、扫描、传真等能力描述。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SupportedDevicesResponse"
+              example:
+                device_info:
+                  - model_name: M6600NW Series
+                    usb_pid: "0x1234"
+                    series_name: M6600
+                print_capability:
+                  - model_name: M6600NW Series
+                    duplex: true
+                    color_mode:
+                      - mono
+                scan_capability:
+                  - model_name: M6600NW Series
+                    source:
+                      - flatbed
+                    color_mode:
+                      - color
+                      - gray
+                fax_capability: []
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /devices/supported.csv:
+    get:
+      operationId: getSupportedDevicesCsv
+      summary: 支持设备列表（CSV）
+      description: 下载当前 SDK 支持设备列表的 CSV 文件。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples: 
+              - close
+      responses:
+        "200":
+          description: 成功返回 CSV 文件内容。
+          content:
+            text/csv:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /devices/usb:
+    get:
+      operationId: getUsbDevices
+      summary: USB设备列表
+      description: 读取当前已识别的 USB 设备列表。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples: 
+              - close
+      responses:
+        "200":
+          description: 成功返回 USB 设备列表。
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/UsbDevice"
+              example:
+                - model_name: M6550NW Series
+                  serial_number: PTM123456789
+                  compression: 0
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /devices/net:
+    get:
+      operationId: getNetDevices
+      summary: NET设备列表
+      description: 读取当前局域网发现任务的状态、搜索参数和已发现的网络设备列表。
+      parameters:
+        - name: Accept
+          in: header
+          required: false
+          description: 缺省默认为 `application/json`，可显式指定 `text/event-stream` 以接收流式结果。
+          schema:
+            type: string
+            examples:
+              - application/json
+              - text/event-stream
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回搜索任务状态、搜索参数和当前发现到的网络设备列表。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NetDevicesResponse"
+              example:
+                job_info:
+                  status: completed
+                  status_timestamp:
+                    created: "2025-01-01T00:00:00Z"
+                    processing: "2025-01-01T00:00:01Z"
+                    completed: "2025-01-01T00:00:10Z"
+                  result: success
+                job_setting:
+                  duration: 10
+                  interval: 2
+                devices:
+                  - sdk_interface_name: wlan0
+                    model_name: M6550NW Series
+                    host_name: Pantum-M6550NW
+                    serial_number: PTM123456789
+                    ipv4: 192.168.1.20
+                    ipv6: fe80::1
+                    mac_address: "00:11:22:33:44:55"
+                    compression: 0
+                    slp_attribute_list:
+                      printer_name: Pantum-M6550NW
+                      x_mac_addr: "00:11:22:33:44:55"
+                    bonjour_txt_record:
+                      product: Pantum M6550NW Series
+                      ty: Pantum-M6550NW
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+    post:
+      operationId: startNetDeviceSearch
+      summary: 开始 NET 设备搜索
+      description: 启动局域网设备搜索任务，搜索时长和发包间隔由 `job_setting` 指定。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NetSearchRequest"
+            example:
+              job_setting:
+                duration: 10
+                interval: 2
+      responses:
+        "200":
+          description: 成功启动搜索任务。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /devices/net/cancel:
+    post:
+      operationId: cancelNetDeviceSearch
+      summary: 取消 NET 设备搜索
+      description: 停止当前正在执行的局域网设备搜索任务。
+      parameters:
+        - name: Connection
+          in: header
+          required: false
+          description: 建议传 close。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功取消搜索任务。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/create/get:
+    post:
+      operationId: createPdf
+      summary: 创建 PDF 文件
+      description: 将一组图片（JPEG、PNG、BMP）合并为 PDF 文件，保存到指定路径。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PdfCreateRequest"
+            example:
+              image:
+                - /tmp/page1.jpeg
+                - /tmp/page2.png
+              resolution: 300
+              pdf_path: /tmp/output.pdf
+      responses:
+        "200":
+          description: 创建成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/preview:
+    get:
+      operationId: getPdfPreviewJobs
+      summary: 预览作业列表
+      description: 读取当前 SDK 中所有 PDF 预览作业的 ID 列表。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回预览作业 ID 列表。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfPreviewJobsResponse"
+              example:
+                job_ids:
+                  - "preview-job-001"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+    post:
+      operationId: createPdfPreviewJob
+      summary: 创建预览作业
+      description: |-
+        打开指定 PDF 文件，创建预览作业，返回作业 ID 及文件元数据（页数、版本、创建日期等）。
+
+        创建成功后可通过 `job_id` + `page_index` 获取各页的尺寸信息、BMP 图像或 RAW 数据。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PdfPreviewJobCreateRequest"
+            example:
+              job_setting:
+                path: /tmp/document.pdf
+                password: ""
+      responses:
+        "200":
+          description: 创建成功，返回作业 ID 及文件元数据。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfPreviewJobResponse"
+              example:
+                job_id: "preview-job-001"
+                job_setting:
+                  path: /tmp/document.pdf
+                  password: ""
+                file_meta:
+                  page_count: 13
+                  pdf_version: "1.5"
+                  pdf_producer: "Adobe PDF Library 10.01"
+                  content_creator: "Adobe Illustrator CS6 (Windows)"
+                  creation_date: "2024-01-03T15:08:43Z"
+                  modification_date: "2024-01-03T15:08:43Z"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/preview/{job_id}/{page_index}/meta:
+    get:
+      operationId: getPdfPreviewPageMeta
+      summary: 获取指定页元数据
+      description: 获取指定预览作业中某一页的宽、高（单位：72dpi 点数）及旋转角度。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page_index
+          in: path
+          required: true
+          description: 页面下标，取值范围 [1, page_count]。
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回页面元数据。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfPreviewPageMetaResponse"
+              example:
+                width: 595
+                height: 842
+                rotation: 0
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/preview/{job_id}/{page_index}/bmp/get:
+    post:
+      operationId: getPdfPreviewPageBmp
+      summary: 获取指定页 BMP
+      description: 将指定预览作业中某一页渲染为 BMP 图像，以二进制流返回。支持自定义输出尺寸、缩放模式和边距。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page_index
+          in: path
+          required: true
+          description: 页面下标，取值范围 [1, page_count]。
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PdfPreviewPageBmpRequest"
+            example:
+              width: 595
+              height: 842
+              scale_mode: aspect_fit
+              margin:
+                top: 0
+                bottom: 0
+                left: 0
+                right: 0
+                color: "0xFFFFFF"
+      responses:
+        "200":
+          description: 成功返回 BMP 图像二进制数据。
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/preview/{job_id}/{page_index}/raw/get:
+    post:
+      operationId: getPdfPreviewPageRaw
+      summary: 获取指定页 RAW
+      description: |-
+        将指定预览作业中某一页渲染为 RAW 像素数据，以二进制流返回。支持多种像素排列模式、缩放模式和边距。
+
+        注意：返回的 RAW 数据每行按 4 字节对齐。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: page_index
+          in: path
+          required: true
+          description: 页面下标，取值范围 [1, page_count]。
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PdfPreviewPageRawRequest"
+            example:
+              width: 595
+              height: 842
+              mode: e_raw_mode_color_argb
+              scale_mode: aspect_fit
+      responses:
+        "200":
+          description: 成功返回 RAW 像素二进制数据。
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /pdf/preview/{job_id}:
+    delete:
+      operationId: deletePdfPreviewJob
+      summary: 删除预览作业
+      description: 关闭并删除指定的 PDF 预览作业，返回该作业的设置及文件元数据。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 删除成功，返回作业信息。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PdfPreviewJobResponse"
+              example:
+                job_id: "preview-job-001"
+                job_setting:
+                  path: /tmp/document.pdf
+                  password: ""
+                file_meta:
+                  page_count: 13
+                  pdf_version: "1.5"
+                  pdf_producer: "Adobe PDF Library 10.01"
+                  content_creator: "Adobe Illustrator CS6 (Windows)"
+                  creation_date: "2024-01-03T15:08:43Z"
+                  modification_date: "2024-01-03T15:08:43Z"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /device/status/get:
+    post:
+      operationId: getDeviceStatus
+      summary: 获取设备状态
+      description: |-
+        获取指定设备的当前状态，包括静态信息（版本号、序列号等）和动态信息（耗材、状态列表、纸盒、页数统计等）。
+
+        此接口为阻塞式调用，成功时立即返回，否则等待超时。
+
+        **限制：**
+        - `io` 支持 IPv4、IPv6；USB 仅限 Linux、macOS、Android。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceStatusRequest"
+            example:
+              job_target:
+                model_name: "M7300FDW Series"
+                io: "ipv4://192.168.1.100"
+              job_setting:
+                duration: 10
+                interval: 2
+      responses:
+        "200":
+          description: 成功返回设备状态。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceStatusResponse"
+              example:
+                result: success
+                static:
+                  version:
+                    firmware: "1.A.0.0"
+                    boot: "1.A.0.0"
+                    kernel: "1.A.0.0"
+                    engine: "1.A.0.0"
+                  production_date: "2024-01-01"
+                  memory_size: "256"
+                  serial_number: "PTM123456789"
+                  batch_number: "B001"
+                dynamic:
+                  sleep_time: 15
+                  status:
+                    - name: STATUS_I_PRINT_READY
+                      description: 就绪
+                      param: ""
+                  supply:
+                    cartridge:
+                      k: 80
+                    drum:
+                      k: 90
+                  media_source:
+                    standard_tray: true
+                    manual_tray: false
+                  page_count_summary:
+                    total: 1000
+                    monochrome: 950
+                    color: 50
+                  page_count_media_size:
+                    "A4 (210x297mm)": 900
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /device/status.csv:
+    get:
+      operationId: getDeviceStatusCsv
+      summary: 设备状态列表（CSV）
+      description: 下载 CSV 文件，列出各系列设备所有可能的状态宏名及参数说明，供解析 `dynamic.status[].param` 字段时参考。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回 CSV 文件内容。
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /device/slp/get:
+    post:
+      operationId: getDeviceSlp
+      summary: 获取设备 SLP 信息（仅 NET）
+      description: |-
+        向指定 IPv4/IPv6 地址查询设备的 SLP 原始属性信息。此接口为阻塞式调用，成功时立即返回，否则等待超时。
+
+        **限制：**
+        - 仅支持 NET（IPv4/IPv6），不支持 USB。
+        - 若设备已关闭 SLP，接口必然超时失败。
+
+        `job_target.model_name` 可传空字符串 `""` 跳过型号校验；若传入非空字符串，当实际型号不符时响应 `error_model_name_mismatch`。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceSlpRequest"
+            example:
+              job_target:
+                model_name: ""
+                io: "ipv4://192.168.1.100"
+              job_setting:
+                duration: 10
+                interval: 2
+      responses:
+        "200":
+          description: 成功返回 SLP 信息。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceSlpResponse"
+              example:
+                result: success
+                model_name: "M7300FDW Series"
+                host_name: "Pantum-M7300FDW"
+                slp_attribute_list:
+                  printer_name: Pantum-M7300FDW
+                  x_mac_addr: "00:11:22:33:44:55"
+                  sn: PTM123456789
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /device/sleep_time:
+    post:
+      operationId: setDeviceSleepTime
+      summary: 设置设备休眠时间（仅 USB）
+      description: |-
+        设置指定 USB 设备的休眠时间。
+
+        **限制：** 仅支持 USB，不支持 NET。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DeviceSleepTimeRequest"
+            example:
+              job_target:
+                model_name: "M7300FDW Series"
+                io: "usb_sn://CP7J000193"
+              job_setting:
+                timeout: 20
+                sleep_time: 15
+      responses:
+        "200":
+          description: 成功返回操作结果。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DeviceSleepTimeResponse"
+              example:
+                result: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /scan:
+    get:
+      operationId: getScanJobs
+      summary: 扫描作业列表
+      description: 读取当前 SDK 中所有扫描作业的 ID 列表及缓存目录路径。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回扫描作业列表及缓存目录。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanJobsResponse"
+              example:
+                job_ids:
+                  - "scan-job-001"
+                  - "scan-job-002"
+                cache_directory: "/data/working/modules/scan/"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+    post:
+      operationId: createScanJob
+      summary: 创建扫描作业
+      description: 创建一个扫描作业。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ScanJobCreateRequest"
+            example:
+              job_target:
+                model_name: "M7300FDW Series"
+                io: "ipv4://192.168.1.100"
+              job_setting:
+                source: fb
+                color_mode: grayscale
+                resolution: "300"
+                media_size: "A4 (210x297mm)"
+      responses:
+        "200":
+          description: 创建成功，返回作业 ID。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanJobCreateResponse"
+              example:
+                job_id: "scan-job-001"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /scan/{job_id}/cancel:
+    post:
+      operationId: cancelScanJob
+      summary: 取消扫描作业
+      description: 取消指定扫描作业的执行。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 取消成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /scan/{job_id}:
+    get:
+      operationId: getScanJob
+      summary: 扫描作业
+      description: |-
+        获取指定扫描作业的状态、设置和已扫描文件列表。此接口为阻塞式调用，作业结束前会持续阻塞。
+
+        `job_progress.progress` 表示当前页面数据接收进度（0–100）。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Accept
+          in: header
+          required: false
+          description: 缺省默认为 `application/json`，可显式指定 `text/event-stream` 以接收流式结果。
+          schema:
+            type: string
+            examples:
+              - application/json
+              - text/event-stream
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回扫描作业详情。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScanJobResponse"
+              example:
+                job_id: "scan-job-001"
+                job_info:
+                  status: completed
+                  status_timestamp:
+                    created: "2025-01-01T00:00:00Z"
+                    processing: "2025-01-01T00:00:01Z"
+                    completed: "2025-01-01T00:00:10Z"
+                    canceled: ""
+                    failed: ""
+                  result: success
+                job_target:
+                  model_name: "M7300FDW Series"
+                  io: "ipv4://192.168.1.100"
+                job_setting:
+                  source: fb
+                  color_mode: grayscale
+                  resolution: "300"
+                  media_size: "A4 (210x297mm)"
+                job_progress:
+                  index: 1
+                  progress: 100
+                files:
+                  - "/data/working/modules/scan/scan-job-001/page_001.jpg"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+    delete:
+      operationId: deleteScanJob
+      summary: 删除扫描作业
+      description: 删除指定的扫描作业记录。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 删除成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print:
+    get:
+      operationId: getPrintJobs
+      summary: 打印作业列表
+      description: 读取当前 SDK 中所有打印作业的 ID 列表及缓存目录路径。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回打印作业列表及缓存目录。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJobsResponse"
+              example:
+                job_ids:
+                  - "job-001"
+                  - "job-002"
+                cache_directory: "/data/working/modules/print/"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+    post:
+      operationId: createPrintJob
+      summary: 创建打印作业
+      description: |-
+        创建一个打印作业。注意：由于支持边打印、边传入文件，在传入文件结束前无法计算有效进度，job_info.progress 的值保持为 0。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintJobCreateRequest"
+            example:
+              job_target:
+                model_name: "M7300FDW Series"
+                io: "ipv4://192.168.1.100"
+              job_setting:
+                copies: 1
+                collate: true
+                sides: one_sided
+                media_source: auto
+                color_mode: monochrome
+                media_size: "A4 (210x297mm)"
+                media_type: paper_plain
+                density: default
+                crop_by_margin: false
+                document_name: "test.pdf"
+      responses:
+        "200":
+          description: 创建成功，返回作业 ID。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintJobCreateResponse"
+              example:
+                job_id: "job-001"
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print/{job_id}/patch:
+    post:
+      operationId: patchPrintJob
+      summary: 传入打印文件
+      description: |-
+        向指定打印作业传入文件。支持图片格式：BMP、JPEG、PNG。
+        图片打印支持边打印边传入文件，传入空数组 `[]` 表示结束传入文件。
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrintJobPatchRequest"
+            example:
+              job_input:
+                image:
+                  - path: /tmp/test.png
+                    rotation: 0
+      responses:
+        "200":
+          description: 传入成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print/{job_id}/cancel:
+    post:
+      operationId: cancelPrintJob
+      summary: 取消打印作业
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 取消成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print/{job_id}:
+    delete:
+      operationId: deletePrintJob
+      summary: 删除打印作业
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 删除成功。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+              example:
+                code: 200
+                message: OK
+                details: success
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print/model_deps/supported.csv:
+    get:
+      operationId: getPrintModelDepsSupportedCsv
+      summary: 机型接口支持情况（CSV）
+      description: 下载 CSV 文件，列出各机型对部分打印接口的支持情况。
+      parameters:
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回 CSV 文件内容。
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+  /print/model_deps/print_result/{job_id}:
+    get:
+      operationId: getPrintResult
+      summary: 打印作业结果*
+      description: |-
+        获取指定打印作业的打印结果。仅部分型号支持此接口，支持情况可调用 `GET /print/model_deps/supported.csv` 下载 CSV 文件确认。
+
+        注意：此接口调用过程中，禁止调用 `DELETE /print/{job_id}`，否则返回 404。
+
+        建议调用顺序：
+        1. `POST /print`
+        2. `GET /print/{job_id}`
+        3. `GET /print/model_deps/print_result/{job_id}`
+        4. `POST /print/{job_id}/patch`
+      parameters:
+        - name: job_id
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: Connection
+          in: header
+          required: true
+          description: 建议传 close，便于移动端调试时快速关闭连接。
+          schema:
+            type: string
+            examples:
+              - close
+      responses:
+        "200":
+          description: 成功返回打印结果。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PrintResultResponse"
+              example:
+                result: success
+                print_result:
+                  copies: 1
+                  print_pages: 2
+                  total_pages: 2
+        default:
+          description: 未预期错误。
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                error: Internal Server Error
+                message: unexpected error
+components:
+  schemas:
+    PrintResultResponse:
+      type: object
+      required:
+        - result
+        - print_result
+      additionalProperties: false
+      properties:
+        result:
+          type: string
+          enum:
+            - success
+            - error_others
+            - error_timeout
+            - error_unsupported
+            - error_unsupported_firmware
+            - error_device_not_found
+            - error_model_name_mismatch
+            - error_connection_interrupt
+        print_result:
+          type: object
+          description: 当 result == success 时返回，否则为 null。
+          required:
+            - copies
+            - print_pages
+            - total_pages
+          properties:
+            copies:
+              type: integer
+              description: 打印作业份数。
+            print_pages:
+              type: integer
+              description: 实际打印页数。
+            total_pages:
+              type: integer
+              description: 打印作业总页数。
+    PrintJobTarget:
+      type: object
+      required:
+        - model_name
+        - io
+      additionalProperties: false
+      properties:
+        model_name:
+          type: string
+          description: |-
+            属性来源：`GET /devices/supported`、`GET /devices/net`、`GET /devices/usb`
+        io:
+          type: string
+          description: |-
+            NET 示例：
+            - IPv4：`ipv4://192.168.223.1`
+            - IPv6：`ipv6://fe80::aec5:1bff:fe58:9b5a%en0`
+
+            USB 示例：
+            - USB 序列号：`usb_sn://CP7J000193`
+            - USB 文件描述符（Android）：`usb_fd://15`
+
+            文件路径示例：
+            - `file:///tmp/out.prn`（生成打印 PRN 文件）
+            - `file:///` 包含三个 `/`，前两个构成前缀 `file://`，最后一个 `/` 表示绝对路径根目录
+            - 注意：若应用对指定路径无读写权限，会直接报错；若文件已存在，也会直接报错，不会覆盖写入（出于安全考虑）
+    PrintJobSetting:
+      type: object
+      required:
+        - collate
+        - sides
+        - media_source
+        - color_mode
+        - media_size
+        - media_type
+        - copies
+        - density
+        - crop_by_margin
+        - document_name
+      description: 请参照 `GET /devices/supported` 中的 `print_capability`，不同型号能力不同。
+      properties:
+        collate:
+          type: boolean
+          description: 是否逐份。
+        copies:
+          type: integer
+          minimum: 1
+          maximum: 100
+          default: 1
+          description: 打印份数。
+        density:
+          type: string
+        media_size:
+          type: string
+        media_type:
+          type: string
+        color_mode:
+          type: string
+        media_source:
+          type: string
+        sides:
+          type: string
+        crop_by_margin:
+          type: boolean
+          default: false
+          description: |-
+            是否根据 margin 裁剪。
+            对下列系列无效：e_model_series_inkjet_6104、e_model_series_inkjet_6108。
+        document_name:
+          type: string
+          description: 文档名，可传空字符串 ""。
+        quality:
+          type: string
+          description: |-
+            【引入版本】0.0.13
+            - 若指定型号 print_capability.quality 返回 []，禁止设置此字段，否则创建作业失败。
+            - 若返回 [draft, normal, high]，必须设置此字段，否则创建作业失败。
+        compression:
+          type: integer
+          enum:
+            - 0
+            - 1
+          default: 0
+          description: |-
+            压缩模式。来源 `GET /devices/net` 或 `GET /devices/usb`。
+            - 0：默认
+            - 1：压缩模式 1
+    PrintJobCreateRequest:
+      type: object
+      required:
+        - job_setting
+        - job_target
+      properties:
+        job_target:
+          $ref: "#/components/schemas/PrintJobTarget"
+        job_setting:
+          $ref: "#/components/schemas/PrintJobSetting"
+    PrintJobCreateResponse:
+      type: object
+      required:
+        - job_id
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+          description: 新建打印作业的 ID。
+    PrintMargin:
+      type: object
+      required:
+        - top
+        - bottom
+        - left
+        - right
+      description: |-
+        【引入版本】0.0.31。填充模式：aspect fit。
+        如不传入此对象，各项属性按默认值生效。
+        须满足 media_size 物理高度 > top + bottom，物理宽度 > left + right。
+      properties:
+        top:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：µm（1000µm == 1mm）"
+        bottom:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：µm（1000µm == 1mm）"
+        left:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：µm（1000µm == 1mm）"
+        right:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：µm（1000µm == 1mm）"
+        color:
+          type: string
+          default: "0xFFFFFF"
+          description: "边距填充颜色，格式：0xRRGGBB。"
+    PrintJobPatchRequest:
+      type: object
+      required:
+        - job_input
+      additionalProperties: false
+      properties:
+        job_input:
+          type: object
+          description: 每个打印作业只支持单一类型，`pdf` 和 `image` 只能存在一个。
+          properties:
+            image:
+              type: array
+              description: |-
+                支持边打印边传入文件，传入空数组 `[]` 表示结束传入文件。
+                注意：e_model_series_inkjet_6108 只有在传入空数组后才会开始打印。
+                支持格式：BMP、JPEG、PNG。
+              items:
+                type: object
+                required:
+                  - path
+                  - rotation
+                properties:
+                  path:
+                    type: string
+                    description: 页面路径。
+                  rotation:
+                    type: integer
+                    enum: [0, 90, 180, 270]
+                    description: 页面旋转角度（顺时针）。
+                  scale_mode:
+                    type: string
+                    enum:
+                      - aspect_fit
+                      - aspect_fill
+                    description: |-
+                      【引入版本】0.0.51
+                      - aspect_fit：自适应
+                      - aspect_fill：拉伸铺满
+                  margin:
+                    $ref: "#/components/schemas/PrintMargin"
+            pdf:
+              type: object
+              required:
+                - path
+                - pages
+                - password
+              additionalProperties: false
+              description: PDF 文件打印参数。
+              properties:
+                path:
+                  type: string
+                  description: 文件路径。
+                password:
+                  type: string
+                  description: 文件密码，无密码传空字符串 ""。
+                pages:
+                  type: array
+                  description: 选择打印页面，选择全部时传空数组 `[]`（此时不支持旋转）。
+                  items:
+                    type: object
+                    required:
+                      - index
+                      - rotation
+                    additionalProperties: false
+                    properties:
+                      index:
+                        type: integer
+                        description: |-
+                          页面下标，取值范围 [1, page_count]。
+                          page_count 来源于 `POST /pdf/preview` 接口。
+                      rotation:
+                        type: integer
+                        enum: [0, 90, 180, 270]
+                        description: 页面旋转角度（顺时针）。
+                      scale_mode:
+                        type: string
+                        enum:
+                          - aspect_fit
+                          - aspect_fill
+                        description: |-
+                          【引入版本】0.0.51
+                          - aspect_fit：自适应
+                          - aspect_fill：拉伸铺满
+                      margin:
+                        $ref: "#/components/schemas/PrintMargin"
+    PrintJobsResponse:
+      type: object
+      required:
+        - job_ids
+        - cache_directory
+      additionalProperties: false
+      properties:
+        job_ids:
+          type: array
+          items:
+            type: string
+          description: 打印作业 ID 列表。
+        cache_directory:
+          type: string
+          description: |-
+            缓存目录：{working_directory}/modules/print/
+
+            SDK 正常结束时，会删除此目录，避免缓存数据残留。
+    ServiceInfoResponse:
+      type: object
+      required:
+        - meta
+        - modules
+      properties:
+        meta:
+          type: object
+          required:
+            - name
+            - version
+            - build_time
+            - mode
+            - git_branch
+            - git_commit_hash
+            - git_commit_time
+            - git_status_clean
+            - system
+            - system_version_min
+            - architecture
+            - macro
+          properties:
+            name:
+              type: string
+              description: 库名。
+              const: onesdk
+            version:
+              type: string
+              description: |-
+                版本号，遵循 MAJOR.MINOR.PATCH 语义化版本控制规则。
+                MAJOR（主版本号）：进行了不兼容的 API 更改时增加。
+                MINOR（次版本号）：进行了向下兼容的功能性新增时增加。
+                PATCH（补丁版本号）：进行了向下兼容的问题修正时增加。
+            build_time:
+              type: string
+              format: date-time
+              description: 编译时间。
+            git_branch:
+              type: string
+              description: git 分支。
+            git_commit_hash:
+              type: string
+              description: git 提交哈希值。
+            git_commit_time:
+              type: string
+              format: date-time
+              description: git 提交时间。
+            mode:
+              type: string
+              description: 版本模式。
+              enum:
+                - debug
+                - release
+            git_status_clean:
+              type: boolean
+              description: git 状态是否干净。
+            system:
+              type: string
+              description: 操作系统。
+            system_version_min:
+              type: string
+              description: 操作系统最低支持版本。
+            architecture:
+              type: string
+              description: CPU 架构。
+            macro:
+              type: string
+              description: 宏名。
+        modules:
+          type: object
+          required:
+            - core
+            - devices
+          properties:
+            core:
+              type: array
+              description: 核心模块列表。
+              items:
+                type: string
+            devices:
+              type: array
+              description: 设备模块列表。
+              items:
+                type: string
+            device:
+              type: array
+              description: 单设备模块列表。
+              items:
+                type: string
+            scan:
+              type: array
+              description: 扫描模块列表。
+              items:
+                type: string
+            fax:
+              type: array
+              description: 传真模块列表。
+              items:
+                type: string
+            print:
+              type: array
+              description: 打印模块列表。
+              items:
+                type: string
+            pdf:
+              type: array
+              description: PDF 模块列表。
+              items:
+                type: string
+    SupportedDevicesResponse:
+      type: object
+      required:
+        - device_info
+        - print_capability
+        - scan_capability
+        - fax_capability
+      properties:
+        device_info:
+          type: array
+          description: 支持设备信息列表。
+          items:
+            $ref: "#/components/schemas/DeviceInfo"
+        print_capability:
+          type: array
+          description: 打印能力列表。
+          items:
+            $ref: "#/components/schemas/PrintCapability"
+        scan_capability:
+          type: array
+          description: 扫描能力列表。
+          items:
+            $ref: "#/components/schemas/ScanCapability"
+        fax_capability:
+          type: array
+          description: 传真能力列表。
+          items:
+            type: object
+            additionalProperties: true
+    DeviceInfo:
+      type: object
+      properties:
+        model_name:
+          type: string
+          description: 机型名称。
+        usb_pid:
+          type: string
+          description: USB PID，可用于 USB 设备识别。
+        series_name:
+          type: string
+          description: 所属系列名称。
+    PrintCapability:
+      type: object
+      properties:
+        model_name:
+          type: string
+        duplex:
+          type: boolean
+        color_mode:
+          type: array
+          items:
+            type: string
+    ScanCapability:
+      type: object
+      properties:
+        model_name:
+          type: string
+        source:
+          type: array
+          items:
+            type: string
+        color_mode:
+          type: array
+          items:
+            type: string
+    UsbDevice:
+      type: object
+      required:
+        - model_name
+        - serial_number
+        - compression
+      properties:
+        model_name:
+          type: string
+          description: 型号。
+        serial_number:
+          type: string
+          description: 序列号。
+        compression:
+          type: integer
+          description: 压缩模式。
+          enum:
+            - 0
+            - 1
+          default: 0
+    NetDevicesResponse:
+      type: object
+      required:
+        - job_info
+        - job_setting
+        - devices
+      properties:
+        job_info:
+          $ref: "#/components/schemas/JobInfo"
+        job_setting:
+          $ref: "#/components/schemas/NetSearchJobSetting"
+        devices:
+          type: array
+          items:
+            $ref: "#/components/schemas/NetDevice"
+    JobInfo:
+      type: object
+      required:
+        - status
+        - status_timestamp
+        - result
+      properties:
+        status:
+          type: string
+          description: 搜索任务当前状态。
+          enum:
+            - created
+            - processing
+            - completed
+            - canceled
+            - failed
+        status_timestamp:
+          $ref: "#/components/schemas/JobStatusTimestamp"
+        result:
+          type: string
+          description: 搜索任务结果。
+          enum:
+            - ""
+            - success
+            - cancel_from_host
+    JobStatusTimestamp:
+      type: object
+      properties:
+        created:
+          type: string
+          format: date-time
+        processing:
+          type: string
+          format: date-time
+        completed:
+          type: string
+          format: date-time
+        canceled:
+          type: string
+          format: date-time
+        failed:
+          type: string
+          format: date-time
+    NetSearchRequest:
+      type: object
+      required:
+        - job_setting
+      properties:
+        job_setting:
+          $ref: "#/components/schemas/NetSearchJobSetting"
+    NetSearchJobSetting:
+      type: object
+      required:
+        - duration
+        - interval
+      properties:
+        duration:
+          type: integer
+          description: |-
+            搜索时长，单位秒。
+            当值为 `0` 时表示持续搜索，不自动停止；当值为 `1` 到 `60` 时表示指定秒数后自动停止。
+          default: 10
+          minimum: 0
+          maximum: 60
+        interval:
+          type: integer
+          description: 发包间隔，单位秒。
+          default: 2
+          minimum: 1
+          maximum: 60
+    NetDevice:
+      type: object
+      required:
+        - model_name
+        - host_name
+        - serial_number
+        - ipv4
+        - ipv6
+        - mac_address
+        - compression
+      properties:
+        sdk_interface_name:
+          type: string
+          description: SDK 运行环境网口名称。
+        model_name:
+          type: string
+          description: 型号名称。
+        host_name:
+          type: string
+          description: 主机名。
+        serial_number:
+          type: string
+          description: 序列号；取决于固件是否有上报，无则为空字符串。
+        ipv4:
+          type: string
+          description: IPv4 地址。
+        ipv6:
+          type: string
+          description: IPv6 地址。
+        mac_address:
+          type: string
+          description: MAC 地址。
+        compression:
+          type: integer
+          description: 压缩模式。
+          enum:
+            - 0
+            - 1
+          default: 0
+        slp_attribute_list:
+          $ref: "#/components/schemas/SlpAttributeList"
+        bonjour_txt_record:
+          $ref: "#/components/schemas/BonjourTxtRecord"
+    SlpAttributeList:
+      type: object
+      description: |-
+        设备返回的 SLP 原始数据映射结果。
+        转换过程仅将 key 中的 `-` 替换为 `_`，并将 `x_ip_addr` 固定设为空字符串。
+      properties:
+        printer_name:
+          type: string
+          description: 主机名，为 `host_name` 属性的来源之一。
+        jbigflag:
+          type: string
+        ieee_1284_device_id:
+          type: string
+        x_mac_addr:
+          type: string
+        x_ip_addr:
+          type: string
+        snmp_ver:
+          type: string
+        sn:
+          type: string
+        pidpt:
+          type: string
+        pid:
+          type: string
+        deviceCap:
+          type: string
+        appid_path:
+          type: string
+        blewifi_ticket:
+          type: string
+        jp_ip_addr:
+          type: string
+        jp_mac_addr:
+          type: string
+        jp_dev_sn:
+          type: string
+      additionalProperties: false
+      nullable: true
+    BonjourTxtRecord:
+      type: object
+      description: 设备返回的 Bonjour TXT Record 原始数据映射结果。
+      properties:
+        blewifi_ticket:
+          type: string
+        appid_path:
+          type: string
+        deviceCap:
+          type: string
+        pidpt:
+          type: string
+        sn:
+          type: string
+        snmp_ver:
+          type: string
+        jbigflag:
+          type: string
+        mopria_certified:
+          type: string
+        adminurl:
+          type: string
+        UUID:
+          type: string
+        usb_MFG:
+          type: string
+        usb_MDL:
+          type: string
+        ty:
+          type: string
+        Duplex:
+          type: string
+        PaperMax:
+          type: string
+        kind:
+          type: string
+        TLS:
+          type: string
+        Color:
+          type: string
+        Fax:
+          type: string
+        Scan:
+          type: string
+        prioity:
+          type: string
+        print_wfds:
+          type: string
+        pdl:
+          type: string
+        product:
+          type: string
+        note:
+          type: string
+        rp:
+          type: string
+        URF:
+          type: string
+        Transparent:
+          type: string
+        qtotal:
+          type: string
+        txtvers:
+          type: string
+      additionalProperties: false
+      nullable: true
+    SuccessResponse:
+      type: object
+      required:
+        - code
+        - message
+        - details
+      properties:
+        code:
+          type: integer
+          const: 200
+        message:
+          type: string
+          const: OK
+        details:
+          type: string
+          const: success
+    PdfCreateRequest:
+      type: object
+      required:
+        - image
+        - resolution
+        - pdf_path
+      properties:
+        image:
+          type: array
+          items:
+            type: string
+          description: |-
+            图像文件路径数组。
+            - 【引入版本】0.0.0：支持 JPEG 格式
+            - 【引入版本】0.0.11：支持 JPEG、PNG、BMP 格式
+        resolution:
+          type: integer
+          description: 图像分辨率（dpi）。若图片实际分辨率低于 72dpi，将按 72dpi 生成 PDF。
+          enum:
+            - 72
+            - 150
+            - 200
+            - 300
+            - 600
+            - 1200
+        pdf_path:
+          type: string
+          description: PDF 文件保存路径。
+    PdfPreviewJobsResponse:
+      type: object
+      required:
+        - job_ids
+      properties:
+        job_ids:
+          type: array
+          items:
+            type: string
+          description: 当前所有预览作业的 ID 列表。
+    PdfPreviewJobSetting:
+      type: object
+      required:
+        - path
+        - password
+      additionalProperties: false
+      properties:
+        path:
+          type: string
+          description: PDF 文件路径。
+        password:
+          type: string
+          description: PDF 文件密码，无密码传空字符串 `""`。
+    PdfPreviewFileMeta:
+      type: object
+      required:
+        - page_count
+        - pdf_version
+        - pdf_producer
+        - content_creator
+        - creation_date
+        - modification_date
+      additionalProperties: false
+      properties:
+        page_count:
+          type: integer
+          description: 总页数。
+        pdf_version:
+          type: string
+          description: PDF 版本号，如 `"1.5"`。
+        pdf_producer:
+          type: string
+          description: PDF 制作工具。
+        content_creator:
+          type: string
+          description: 内容创作者。
+        creation_date:
+          type: string
+          format: date-time
+          description: 创建日期。
+        modification_date:
+          type: string
+          format: date-time
+          description: 修改日期。
+    PdfPreviewJobCreateRequest:
+      type: object
+      required:
+        - job_setting
+      additionalProperties: false
+      properties:
+        job_setting:
+          $ref: "#/components/schemas/PdfPreviewJobSetting"
+    PdfPreviewJobResponse:
+      type: object
+      required:
+        - job_id
+        - job_setting
+        - file_meta
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+          description: 预览作业 ID。
+        job_setting:
+          $ref: "#/components/schemas/PdfPreviewJobSetting"
+        file_meta:
+          $ref: "#/components/schemas/PdfPreviewFileMeta"
+    PdfPreviewPageMetaResponse:
+      type: object
+      required:
+        - width
+        - height
+        - rotation
+      additionalProperties: false
+      properties:
+        width:
+          type: integer
+          description: 页面宽度，单位：72dpi 点数。
+        height:
+          type: integer
+          description: 页面高度，单位：72dpi 点数。
+        rotation:
+          type: integer
+          description: 页面旋转角度。
+    PdfPreviewMargin:
+      type: object
+      required:
+        - top
+        - bottom
+        - left
+        - right
+      description: |-
+        【引入版本】0.0.21。填充模式：aspect fit。
+        如不传入此对象，各项属性按默认值生效。
+        须满足：height > top + bottom，width > left + right。
+      properties:
+        top:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：pixel。"
+        bottom:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：pixel。"
+        left:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：pixel。"
+        right:
+          type: integer
+          minimum: 0
+          default: 0
+          description: "单位：pixel。"
+        color:
+          type: string
+          default: "0xFFFFFF"
+          description: "【引入版本】0.0.29。边距填充颜色，格式：0xRRGGBB。"
+    PdfPreviewPageBmpRequest:
+      type: object
+      required:
+        - width
+        - height
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: 输出图像宽度（pixel），填充模式：aspect fit。
+        height:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: 输出图像高度（pixel），填充模式：aspect fit。
+        scale_mode:
+          type: string
+          enum:
+            - aspect_fit
+            - aspect_fill
+          description: |-
+            【引入版本】0.0.51。缩放模式：
+            - `aspect_fit`：自适应
+            - `aspect_fill`：拉伸铺满
+        margin:
+          $ref: "#/components/schemas/PdfPreviewMargin"
+    PdfPreviewPageRawRequest:
+      type: object
+      required:
+        - width
+        - height
+        - mode
+      properties:
+        width:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: 输出图像宽度（pixel），填充模式：aspect fit。
+        height:
+          type: integer
+          minimum: 1
+          maximum: 65535
+          description: 输出图像高度（pixel），填充模式：aspect fit。
+        mode:
+          type: string
+          description: 像素数据排列模式。
+          enum:
+            - e_raw_mode_color_argb
+            - e_raw_mode_color_bgra
+            - e_raw_mode_color_rgb
+            - e_raw_mode_color_bgr
+            - e_raw_mode_gray
+        scale_mode:
+          type: string
+          enum:
+            - aspect_fit
+            - aspect_fill
+          description: |-
+            【引入版本】0.0.51。缩放模式：
+            - `aspect_fit`：自适应
+            - `aspect_fill`：拉伸铺满
+        margin:
+          $ref: "#/components/schemas/PdfPreviewMargin"
+    DeviceQueryJobSetting:
+      type: object
+      required:
+        - duration
+        - interval
+      additionalProperties: false
+      properties:
+        duration:
+          type: integer
+          minimum: 1
+          maximum: 60
+          default: 10
+          description: 检测时长，单位秒。取值范围 [1, 60]，超时后自动停止。
+        interval:
+          type: integer
+          minimum: 1
+          maximum: 60
+          default: 2
+          description: 发包间隔，单位秒。
+    DeviceStatusRequest:
+      type: object
+      required:
+        - job_target
+        - job_setting
+      properties:
+        job_target:
+          $ref: "#/components/schemas/ScanJobTarget"
+        job_setting:
+          $ref: "#/components/schemas/DeviceQueryJobSetting"
+    DeviceStatusVersion:
+      type: object
+      required:
+        - firmware
+        - boot
+        - kernel
+        - engine
+      properties:
+        firmware:
+          type: string
+          description: 固件版本。
+        boot:
+          type: string
+          description: Boot 版本。
+        kernel:
+          type: string
+          description: Kernel 版本。
+        engine:
+          type: string
+          description: 引擎版本。
+        serial_sequence_number:
+          type: string
+          description: 设备唯一序列号（国产分支新增）。
+        supply_mdl_k:
+          type: string
+          description: 粉盒型号（国产分支新增）。
+    DeviceStatusStatic:
+      type: object
+      required:
+        - version
+        - production_date
+        - batch_number
+        - serial_number
+        - memory_size
+      nullable: true
+      description: 当 `result == success` 时返回设备静态信息，否则为 null。
+      properties:
+        version:
+          $ref: "#/components/schemas/DeviceStatusVersion"
+        production_date:
+          type: string
+          description: 生产日期。
+        memory_size:
+          type: string
+          description: 内存大小（MB）。
+        serial_number:
+          type: string
+          description: 序列号。
+        batch_number:
+          type: string
+          description: 产品批次。
+    DeviceStatusSupplyChannel:
+      type: object
+      description: 耗材各色通道余量（0–100）。
+      properties:
+        c:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 青色（Cyan）。
+        m:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 品红（Magenta）。
+        y:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 黄色（Yellow）。
+        k:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: |-
+            黑色（Black）。
+            注意：黑白激光打印机中，仅部分固件上报此值；不支持时上报 0。
+    DeviceStatusSupply:
+      type: object
+      additionalProperties: false
+      description: 耗材信息。
+      properties:
+        cartridge:
+          $ref: "#/components/schemas/DeviceStatusSupplyChannel"
+          description: 粉盒余量。
+        drum:
+          $ref: "#/components/schemas/DeviceStatusSupplyChannel"
+          description: 鼓组件余量。
+        ink:
+          $ref: "#/components/schemas/DeviceStatusSupplyChannel"
+          description: 墨水余量。
+    DeviceStatusItem:
+      type: object
+      required:
+        - name
+        - description
+        - param
+      properties:
+        name:
+          type: string
+          description: |-
+            状态宏名，格式如下：
+            - 信息：`STATUS_I_`，如 `STATUS_I_PRINT_READY`
+            - 警告：`STATUS_W_`，如 `STATUS_W_PRINT_TONER_NEAR_EMPTY_K`
+            - 错误：`STATUS_E_`，如 `STATUS_E_PRINT_TONER_EMPTY_K`
+            - 故障：`STATUS_F_`，如 `STATUS_F_PRINT_INTERNAL_ERROR`
+            - 未支持状态：10 位十六进制字符串，如 `0x12345678`（SDK 尚未添加支持，如不需要可直接忽略）
+        description:
+          type: string
+          description: 状态中文简易描述，仅供参考，不要以此字段作为程序逻辑依据。
+        param:
+          type: string
+          description: 状态参数，枚举值参见 `GET /device/status.csv` 中对应系列、对应状态的单元格。
+    DeviceStatusMediaSource:
+      type: object
+      additionalProperties: false
+      description: 纸盒安装情况。可通过 `GET /devices/supported` 查看型号支持纸盒详情。
+      properties:
+        automatic_tray:
+          type: boolean
+          description: 自动进纸盒。
+        manual_tray:
+          type: boolean
+          description: 手动进纸盒。
+        standard_tray:
+          type: boolean
+          description: 标准进纸盒。
+        multipurpose_tray:
+          type: boolean
+          description: 多功能进纸盒。
+        internal_high_capacity_tray:
+          type: boolean
+          description: 内置大容量进纸盒。
+        external_high_capacity_tray:
+          type: boolean
+          description: 外置大容量进纸盒。
+        tray_1:
+          type: boolean
+          description: 纸盒 1。
+        tray_2:
+          type: boolean
+          description: 纸盒 2。
+        tray_3:
+          type: boolean
+          description: 纸盒 3。
+        tray_4:
+          type: boolean
+          description: 纸盒 4。
+        optional_tray_1:
+          type: boolean
+          description: 选配进纸盒 1。
+        optional_tray_2:
+          type: boolean
+          description: 选配进纸盒 2。
+    DeviceStatusPageCountSummary:
+      type: object
+      additionalProperties: false
+      description: 页数统计汇总。
+      properties:
+        total:
+          type: integer
+          description: 总打印页数。
+        monochrome:
+          type: integer
+          description: 黑白打印页数。
+        color:
+          type: integer
+          description: 彩色打印页数。
+        red_black:
+          type: integer
+          description: 红黑打印页数（国产分支新增）。
+        cancel_pages:
+          type: integer
+          description: 取消总页数（国产分支新增）。
+        jam_pages:
+          type: integer
+          description: 卡纸总次数（国产分支新增）。
+    DeviceStatusPageCountMediaSize:
+      type: object
+      additionalProperties: false
+      description: 页数统计（按纸张尺寸分类）。
+      properties:
+        "A3 (297x420mm)": { type: integer }
+        "A4 (210x297mm)": { type: integer }
+        "A5 (148x210mm)": { type: integer }
+        "A6 (105x148mm)": { type: integer }
+        "ISO B5 (176x250mm)": { type: integer }
+        "ISO B6 (125x176mm)": { type: integer }
+        "Envelope C5 (162x229mm)": { type: integer }
+        "Envelope C6 (114x162mm)": { type: integer }
+        "Envelope DL (110x220mm)": { type: integer }
+        "Envelope ZL (120x230mm)": { type: integer }
+        "JIS B4 (257x364mm)": { type: integer }
+        "JIS B5 (182x257mm)": { type: integer }
+        "Postcard (148x200mm)": { type: integer }
+        "Japanese Postcard (100x148mm)": { type: integer }
+        "Yougata2 (114x162mm)": { type: integer }
+        "Yougata3 (120x235mm)": { type: integer }
+        "Yougata4 (105x235mm)": { type: integer }
+        "Negagata3 (120x235mm)": { type: integer }
+        "8K (270x390mm)": { type: integer }
+        "16K (185x260mm)": { type: integer }
+        "16K (195x270mm)": { type: integer }
+        "32K (130x185mm)": { type: integer }
+        "32K (135x195mm)": { type: integer }
+        "Envelope Monarch (3.875x7.5in)": { type: integer }
+        "Envelope No.10 (4.125x9.5in)": { type: integer }
+        "Statement (5.5x8.5in)":
+          type: integer
+          description: Statement / Invoice / Mini / Half-Letter
+        "Executive (7.25x10.5in)": { type: integer }
+        "Letter (8.5x11in)": { type: integer }
+        "Folio (8.5x13in)": { type: integer }
+        "Oficio (8.5x13.4in)": { type: integer }
+        "Legal (8.5x14in)": { type: integer }
+        "4x6 (4x6in)":
+          type: integer
+          description: 【引入版本】0.0.11
+        "5x7 (5x7in)":
+          type: integer
+          description: 【引入版本】0.0.11
+        "8x10 (8x10in)":
+          type: integer
+          description: 【引入版本】0.0.11
+        "11x17 (11x17in)":
+          type: integer
+          description: Tabloid / Ledger / 11x17
+        "Custom":
+          type: integer
+          description: 自定义纸张。
+        "Other":
+          type: integer
+          description: 其他纸张。
+        "A4 (210x297mm)/Letter (8.5x11in)": { type: integer }
+        "ISO B5 (176x250mm)/JIS B5 (182x257mm)/Executive (7.25x10.5in)": { type: integer }
+        "Legal (8.5x14in)/Folio (8.5x13in)": { type: integer }
+    DeviceStatusDynamic:
+      type: object
+      required:
+        - supply
+        - status
+        - media_source
+        - sleep_time
+        - page_count_summary
+        - page_count_media_size
+      nullable: true
+      description: 当 `result == success` 时返回设备动态信息，否则为 null。
+      properties:
+        sleep_time:
+          type: integer
+          minimum: 0
+          description: 当前休眠时间设置（分钟）。
+        gbt:
+          type: integer
+          description: |-
+            GBT 固件标识。`0` 表示非 GBT 固件，`1` 表示 GBT 固件。
+            目前仅支持 6138v2r1 及 2242xc 机型。
+          enum:
+            - 0
+            - 1
+        status:
+          type: array
+          description: 设备当前状态列表。各系列可能发生的状态可通过 `GET /device/status.csv` 获取。
+          items:
+            $ref: "#/components/schemas/DeviceStatusItem"
+        supply:
+          $ref: "#/components/schemas/DeviceStatusSupply"
+        media_source:
+          $ref: "#/components/schemas/DeviceStatusMediaSource"
+        page_count_summary:
+          $ref: "#/components/schemas/DeviceStatusPageCountSummary"
+        page_count_media_size:
+          $ref: "#/components/schemas/DeviceStatusPageCountMediaSize"
+    DeviceStatusResponse:
+      type: object
+      required:
+        - result
+        - static
+        - dynamic
+      properties:
+        result:
+          type: string
+          description: |-
+            操作结果：
+            - `success`：成功
+            - `error_others`：其他错误
+            - `error_unsupported`：不支持
+            - `error_device_not_found`：设备未找到
+            - `error_timeout`：I/O 超时
+            - `error_connection_interrupt`：连接中断
+            - `error_model_name_mismatch`：型号名称不匹配
+            - `error_device_setting_closed`：设备设置关闭
+          enum:
+            - success
+            - error_others
+            - error_unsupported
+            - error_device_not_found
+            - error_timeout
+            - error_connection_interrupt
+            - error_model_name_mismatch
+            - error_device_setting_closed
+        static:
+          $ref: "#/components/schemas/DeviceStatusStatic"
+        dynamic:
+          $ref: "#/components/schemas/DeviceStatusDynamic"
+    DeviceSlpRequest:
+      type: object
+      required:
+        - job_target
+        - job_setting
+      properties:
+        job_target:
+          $ref: "#/components/schemas/ScanJobTarget"
+          description: |-
+            `model_name` 可传空字符串 `""` 跳过型号校验；若传入非空字符串，当实际型号不符时响应 `error_model_name_mismatch`。
+            `io` 仅支持 IPv4 和 IPv6，不支持 USB。
+        job_setting:
+          $ref: "#/components/schemas/DeviceQueryJobSetting"
+    DeviceSlpResponse:
+      type: object
+      required:
+        - result
+        - model_name
+        - host_name
+        - slp_attribute_list
+      additionalProperties: false
+      properties:
+        result:
+          type: string
+          description: |-
+            操作结果：
+            - `success`：成功
+            - `error_timeout`：超时
+            - `error_model_name_mismatch`：型号名称不匹配
+            - `error_others`：其他错误
+          enum:
+            - success
+            - error_timeout
+            - error_model_name_mismatch
+            - error_others
+        model_name:
+          type: string
+          description: 当 `result == success` 时为设备实际型号名称；其他情况固定为 `""`。
+        host_name:
+          type: string
+          description: 设备主机名。
+        slp_attribute_list:
+          $ref: "#/components/schemas/SlpAttributeList"
+          description: SLP 原始属性映射（key 中 `-` 已替换为 `_`）；失败时为 null。
+    DeviceSleepTimeRequest:
+      type: object
+      required:
+        - job_target
+        - job_setting
+      properties:
+        job_target:
+          $ref: "#/components/schemas/ScanJobTarget"
+          description: "`io` 仅支持 USB，不支持 NET。"
+        job_setting:
+          type: object
+          required:
+            - timeout
+            - sleep_time
+          additionalProperties: false
+          properties:
+            timeout:
+              type: integer
+              minimum: 20
+              maximum: 60
+              description: |-
+                HTTP 请求超时时间（秒），包含连接超时、读超时、写超时。
+                注意：当发生错误（如目标拒绝连接）时，会立即返回。
+            sleep_time:
+              type: integer
+              description: |-
+                要设置的休眠时间（分钟）。
+                可选值：`1`、`5`、`15`、`30`、`60`。
+              enum:
+                - 1
+                - 5
+                - 15
+                - 30
+                - 60
+    DeviceSleepTimeResponse:
+      type: object
+      required:
+        - result
+      properties:
+        result:
+          type: string
+          description: |-
+            操作结果：
+            - `success`：成功
+            - `error_others`：其他错误
+            - `error_connection_failed`：连接失败
+            - `error_timeout`：超时
+            - `error_command_failed`：命令执行失败
+          enum:
+            - success
+            - error_others
+            - error_connection_failed
+            - error_timeout
+            - error_command_failed
+    ScanJobsResponse:
+      type: object
+      required:
+        - job_ids
+        - cache_directory
+      additionalProperties: false
+      properties:
+        job_ids:
+          type: array
+          items:
+            type: string
+          description: 扫描作业 ID 列表。
+        cache_directory:
+          type: string
+          description: |-
+            缓存目录：{working_directory}/modules/scan/
+
+            SDK 正常结束时，会删除此目录，避免缓存数据残留。
+    ScanJobTarget:
+      type: object
+      required:
+        - model_name
+        - io
+      additionalProperties: false
+      properties:
+        model_name:
+          type: string
+          description: |-
+            属性来源：`GET /devices/supported`、`GET /devices/net`、`GET /devices/usb`
+        io:
+          type: string
+          description: |-
+            NET 示例：
+            - IPv4：`ipv4://192.168.223.1`
+            - IPv6：`ipv6://fe80::aec5:1bff:fe58:9b5a%en0`
+            - IPv4、IPv6 地址来源：`GET /devices/net`
+
+            USB 示例：
+            - USB 序列号：`usb_sn://CP7J000193`
+            - USB 文件描述符（Android）：`usb_fd://15`
+            - USB 序列号来源：`GET /devices/usb`
+            - USB 文件描述符来源（Android）：
+              ```
+              UsbDeviceConnection con = UsbManager.openDevice();
+              int fd = con.getFileDescriptor();
+              String io = "usb_fd://" + String.valueOf(fd);
+              ```
+    ScanJobSetting:
+      type: object
+      required:
+        - source
+        - color_mode
+        - resolution
+        - media_size
+      description: 请参照 `GET /devices/supported` 中的 `scan_capability`，不同型号能力不同。
+      properties:
+        source:
+          type: string
+          description: 扫描来源，如 `fb`（稿台）、`adf`（自动进纸器）等。
+        color_mode:
+          type: string
+          description: 色彩模式，如 `grayscale`、`color` 等。
+        resolution:
+          type: string
+          description: 分辨率，如 `"300"`。
+        media_size:
+          type: string
+          description: 纸张尺寸，如 `"A4 (210x297mm)"`。
+    ScanJobCreateRequest:
+      type: object
+      required:
+        - job_setting
+        - job_target
+      properties:
+        job_target:
+          $ref: "#/components/schemas/ScanJobTarget"
+        job_setting:
+          $ref: "#/components/schemas/ScanJobSetting"
+    ScanJobCreateResponse:
+      type: object
+      required:
+        - job_id
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+          description: 新建扫描作业的 ID。
+    ScanJobInfo:
+      type: object
+      required:
+        - status
+        - status_timestamp
+        - result
+      additionalProperties: false
+      properties:
+        status:
+          type: string
+          description: 作业当前状态。
+          enum:
+            - created
+            - processing
+            - completed
+            - canceled
+            - failed
+        status_timestamp:
+          $ref: "#/components/schemas/JobStatusTimestamp"
+        result:
+          type: string
+          description: |-
+            作业结果：
+            - `success`：成功
+            - `cancel_from_host`：由主机取消
+            - `cancel_from_device`：由设备取消
+            - `error_others`：其他错误
+            - `error_timeout`：超时
+            - `error_connection_failed`：连接失败
+            - `error_connection_interrupt`：连接中断
+            - `error_device_busy`：设备忙
+            - `error_filesystem`：文件系统错误
+            - `error_adf_jam`：自动进纸器卡纸
+            - `error_adf_cover_open`：自动进纸器上盖打开
+            - `error_adf_no_paper_present`：自动进纸器缺纸
+            - `error_fb_cover_open`：稿台上盖打开
+            - `error_paper_size_not_support`：纸张尺寸不支持
+            - `error_adf_pick_up_paper_fail`：自动进纸器取纸失败
+            - `error_need_calibration`：需要校准
+            - `error_disable`：功能已禁用
+            - `error_fatal`：致命错误
+          enum:
+            - ""
+            - success
+            - cancel_from_host
+            - cancel_from_device
+            - error_others
+            - error_timeout
+            - error_connection_failed
+            - error_connection_interrupt
+            - error_device_busy
+            - error_filesystem
+            - error_adf_jam
+            - error_adf_cover_open
+            - error_adf_no_paper_present
+            - error_fb_cover_open
+            - error_paper_size_not_support
+            - error_adf_pick_up_paper_fail
+            - error_need_calibration
+            - error_disable
+            - error_fatal
+    ScanJobProgress:
+      type: object
+      required:
+        - index
+        - progress
+      additionalProperties: false
+      properties:
+        index:
+          type: integer
+          minimum: 1
+          description: 当前扫描页面下标，取值范围 [1, page_count]。
+        progress:
+          type: integer
+          minimum: 0
+          maximum: 100
+          description: 当前页面数据接收进度（0–100）。
+    ScanJobResponse:
+      type: object
+      required:
+        - job_id
+        - job_info
+        - job_target
+        - job_setting
+        - job_progress
+        - files
+      additionalProperties: false
+      properties:
+        job_id:
+          type: string
+          description: 扫描作业 ID。
+        job_info:
+          $ref: "#/components/schemas/ScanJobInfo"
+        job_target:
+          $ref: "#/components/schemas/ScanJobTarget"
+        job_setting:
+          $ref: "#/components/schemas/ScanJobSetting"
+        job_progress:
+          $ref: "#/components/schemas/ScanJobProgress"
+        files:
+          type: array
+          items:
+            type: string
+          description: 已扫描的文件路径列表。
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string

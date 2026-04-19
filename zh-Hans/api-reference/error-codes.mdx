@@ -1,0 +1,100 @@
+---
+title: 错误码
+description: OneSDK HTTP 接口错误响应结构及各接口 result 字段枚举值说明。
+---
+
+# 错误码
+
+## HTTP 错误响应结构
+
+所有接口在发生非预期错误时，均返回统一的 JSON 结构：
+
+```json
+{
+  "error": "错误类型",
+  "message": "错误详情"
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `error` | `string` | 错误类型标识 |
+| `message` | `string` | 错误详细描述 |
+
+## 打印作业结果错误码
+
+`GET /print/model_deps/print_result/{job_id}` 接口的 `result` 字段：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 成功 |
+| `error_timeout` | 超时 |
+| `error_device_not_found` | 未找到目标设备 |
+| `error_model_name_mismatch` | 机型名称不匹配 |
+| `error_connection_interrupt` | 连接中断 |
+| `error_unsupported` | 当前机型不支持此操作 |
+| `error_unsupported_firmware` | 固件版本不支持 |
+| `error_others` | 其他错误 |
+
+## 扫描作业结果错误码
+
+`GET /scan/{job_id}` 接口的 `job_info.result` 字段：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 成功 |
+| `cancel_from_host` | 由主机取消 |
+| `cancel_from_device` | 由设备取消 |
+| `error_others` | 其他错误 |
+| `error_timeout` | 超时 |
+| `error_connection_failed` | 连接失败 |
+| `error_connection_interrupt` | 连接中断 |
+| `error_device_busy` | 设备忙 |
+| `error_filesystem` | 文件系统错误 |
+| `error_adf_jam` | 自动进纸器卡纸 |
+| `error_adf_cover_open` | 自动进纸器上盖打开 |
+| `error_adf_no_paper_present` | 自动进纸器缺纸 |
+| `error_fb_cover_open` | 稿台上盖打开 |
+| `error_paper_size_not_support` | 纸张尺寸不支持 |
+| `error_adf_pick_up_paper_fail` | 自动进纸器取纸失败 |
+| `error_need_calibration` | 需要校准 |
+| `error_disable` | 功能已禁用 |
+| `error_fatal` | 致命错误 |
+
+## 设备状态查询错误码
+
+`POST /device/status/get` 接口的 `result` 字段：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 成功 |
+| `error_others` | 其他错误 |
+| `error_unsupported` | 不支持 |
+| `error_device_not_found` | 设备未找到 |
+| `error_timeout` | I/O 超时 |
+| `error_connection_interrupt` | 连接中断 |
+| `error_model_name_mismatch` | 机型名称不匹配 |
+| `error_device_setting_closed` | 设备设置关闭（设备拒绝查询） |
+
+## 设备 SLP 查询错误码
+
+`POST /device/slp/get` 接口的 `result` 字段：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 成功 |
+| `error_timeout` | 超时（设备未响应或已关闭 SLP） |
+| `error_model_name_mismatch` | 机型名称不匹配 |
+| `error_others` | 其他错误 |
+
+## 设备休眠时间设置错误码
+
+`POST /device/sleep_time` 接口的 `result` 字段：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 成功 |
+| `error_others` | 其他错误 |
+| `error_connection_failed` | 连接失败 |
+| `error_timeout` | 超时 |
+| `error_command_failed` | 命令执行失败 |

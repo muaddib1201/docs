@@ -1,0 +1,9 @@
+---
+title: 创建扫描作业
+description: 创建一个扫描作业，扫描参数需参照 GET /devices/supported 中对应机型的 scan_capability 进行设置。
+openapi: openapi/onesdk-core.yaml POST /scan
+---
+
+<Note>
+  `job_setting` 中各字段的可选值取决于目标机型的 `scan_capability`，不同型号能力不同，请以 `GET /devices/supported` 接口返回的实际数据为准。
+</Note>

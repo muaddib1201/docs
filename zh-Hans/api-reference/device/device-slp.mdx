@@ -1,0 +1,17 @@
+---
+title: 获取设备 SLP 信息（仅 NET）
+description: 阻塞式获取指定 IPv4/IPv6 设备的 SLP 原始属性信息。
+openapi: openapi/onesdk-core.yaml POST /device/slp/get
+---
+
+<Warning>
+  此接口仅支持 NET（IPv4/IPv6），不支持 USB。
+</Warning>
+
+<Warning>
+  若设备已关闭 SLP（主观上不允许被发现/探测），此接口必然超时失败。
+</Warning>
+
+<Note>
+  `job_target.model_name` 可传空字符串 `""` 跳过型号校验。若传入非空字符串，当实际型号不符时响应 `error_model_name_mismatch`。
+</Note>

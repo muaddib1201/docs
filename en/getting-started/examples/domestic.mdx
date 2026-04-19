@@ -1,0 +1,122 @@
+---
+title: Domestic OS Demo
+description: File structure, cmake build steps, and service startup for the C++ sample project.
+---
+
+The SDK for domestic operating systems is delivered as the dynamic library `libonesdk.so`. It exposes startup, shutdown, and diagnostic interfaces through the C API (`api.h`) and is suitable for Linux-based domestic operating-system applications.
+
+## Project File Structure
+
+```text
+bin/
+└── main            ← Executable
+lib/
+├── api.h           ← C API header
+└── libonesdk.so    ← SDK dynamic library
+example/
+├── main.cc         ← Sample source code
+└── CMakeLists.txt  ← Build configuration
+```
+
+---
+
+## C API
+
+`api.h` exposes three interfaces:
+
+| Interface | Description |
+| --- | --- |
+| `onesdk_start_http_server(const char* setting)` | Starts the HTTP service and returns a JSON string |
+| `onesdk_stop_http_server()` | Stops the service and blocks until completion |
+| `onesdk_http_server_diagnostic()` | Diagnoses service state and outputs logs |
+
+<Note>
+  On domestic operating systems, the `authorization` field supports two input styles: a direct **file path** without a `file://` prefix, or a **base64-encoded authorization string** prefixed with `base64://`.
+</Note>
+
+---
+
+## Integration Steps
+
+<Steps>
+  <Step title="Quick verification (optional)">
+    Run the prebuilt artifact directly to verify that the SDK works without compiling:
+
+    ```bash
+    ./bin/main
+    ```
+  </Step>
+
+  <Step title="Build the sample project">
+    Copy `api.h` and `libonesdk.so` into the `example/` directory, then run:
+
+    ```bash
+    cd example
+    mkdir build && cd build
+    cmake ..
+    make
+    ./main
+    ```
+  </Step>
+
+  <Step title="Start the service">
+    The core logic of `main.cc` is:
+
+    ```cpp
+    #include "api.h"
+    #include <unistd.h>
+    #include <signal.h>
+
+    void signal_handler(int signum) { ; }
+
+    int main(int argc, char* argv[]) {
+        signal(SIGINT, signal_handler);
+
+        const char* param = R"({
+            "port": 3883,
+            "remote_access": false,
+            "authorization": "/path/to/auth_file",
+            "working_directory": "/tmp/com.pantum.onesdk",
+            "log": {
+                "console": false,
+                "file": {
+                    "path": "/tmp/com.pantum.onesdk.log",
+                    "max_size": 8,
+                    "max_files": 1
+                }
+            }
+        })";
+
+        // You can also pass the config through the CLI: ./main '<json>'
+        if (argc > 1) param = argv[1];
+
+        const char* result = onesdk_start_http_server(param);
+
+        pause();   // Keep the process running
+        onesdk_stop_http_server();
+        return 0;
+    }
+    ```
+  </Step>
+
+  <Step title="Verify the service">
+    ```bash
+    # Verify the service is available
+    curl http://127.0.0.1:3883/
+
+    # Query supported models
+    curl http://127.0.0.1:3883/devices/supported
+
+    # Start a network search (streaming response)
+    curl -X POST http://127.0.0.1:3883/devices/net \
+      -H "Content-Type: application/json" \
+      -d '{"duration": 10, "interval": 2}'
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Parameters and Return Values
+
+For full field descriptions of startup parameters and return values, see [Example Projects - General Reference](/en/getting-started/examples#general-reference).

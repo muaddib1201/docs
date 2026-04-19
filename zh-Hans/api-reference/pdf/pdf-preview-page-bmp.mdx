@@ -1,0 +1,10 @@
+---
+title: 获取指定页 BMP
+description: 将指定预览作业的某一页渲染为 BMP 图像，以二进制流返回。支持自定义输出尺寸、缩放模式和边距。
+openapi: openapi/onesdk-core.yaml POST /pdf/preview/{job_id}/{page_index}/bmp/get
+---
+
+<Note>
+  `margin` 单位为 pixel，须满足 `height > top + bottom`、`width > left + right`。
+  `margin.color` 格式为 `0xRRGGBB`，默认 `0xFFFFFF`（白色）。【引入版本】0.0.29
+</Note>

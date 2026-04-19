@@ -1,0 +1,75 @@
+---
+title: Integration
+description: Common issues related to OneSDK integration setup, demo usage, and dependency conflicts.
+---
+
+# Integration
+
+### How should I pass parameters when creating a print job?
+
+See the interface document for "POST Print Job (Create)" for detailed parameter descriptions.
+
+In the print-parameter JSON, the value of each key comes from the printer's print capability. Print capability is returned by the "GET Supported Device List" interface.
+
+- When `model_name` and `usb_pid` are empty strings, the API returns all devices and capabilities supported by the SDK.
+- When specific values are passed, the API returns the device information for that device if it is supported.
+
+It is recommended to fetch the device information and print capability for the target device before entering any print-related workflow.
+
+---
+
+### How do I use the SDK demo project?
+
+In the SDK demo project, each button roughly corresponds to one API request example. In the print and scan modules, the top-to-bottom button order represents the execution order of the full print or scan workflow.
+
+Data from interfaces such as print progress, scan progress, the discovered device list, and the ping device list is returned continuously as **streaming data**, so make sure to review how the demo handles these cases.
+
+---
+
+### How do I resolve HAR package dependency conflicts?
+
+`onesdk.har` depends on and packages `libusb1.0.so`, which may conflict with dependencies from other HAR packages.
+
+You can resolve the conflict by referring to the official documentation: [HarmonyOS HAR dependency conflict handling](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hvigor-cpp-V5?catalogVersion=V5)
+
+<Note>
+To keep the SDK working correctly, it is recommended to prioritize packaging the library files inside `onesdk.har`.
+</Note>
+
+---
+
+### What is the parameter format for POST print-job file upload?
+
+Interface path: `POST /print/{job_id}/patch`
+
+The interface supports either a PDF file or image files (BMP, JPEG, PNG).
+
+**Image print example:**
+
+```json
+{
+  "job_input": {
+    "image": [
+      { "path": "/path/to/image1.jpeg", "rotation": 0 },
+      { "path": "/path/to/image2.bmp",  "rotation": 0 },
+      { "path": "/path/to/image3.png",  "rotation": 90 }
+    ]
+  }
+}
+```
+
+**PDF print example:**
+
+```json
+{
+  "job_input": {
+    "pdf": {
+      "path": "/path/to/1.pdf",
+      "password": "12345678",
+      "pages": [
+        { "index": 1, "rotation": 90 }
+      ]
+    }
+  }
+}
+```

@@ -1,0 +1,14 @@
+---
+title: Create Preview Job
+description: Open the specified PDF file, create a preview job, and return the job ID together with file metadata such as page count, version, and creation date.
+openapi: openapi/onesdk-core.yaml POST /pdf/preview
+---
+
+<Note>
+  After the job is created successfully, use `job_id` and `page_index` to call the following interfaces:
+  - [Get Page Metadata](/en/api-reference/pdf/pdf-preview-page-meta) - obtain width, height, and rotation
+  - [Get Page BMP](/en/api-reference/pdf/pdf-preview-page-bmp) - render the page as a BMP image
+  - [Get Page RAW](/en/api-reference/pdf/pdf-preview-page-raw) - render the page as RAW pixel data
+
+  `page_index` must be in the range [1, `file_meta.page_count`].
+</Note>

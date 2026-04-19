@@ -1,0 +1,92 @@
+---
+title: 概览
+description: 各平台 Demo 工程入口，帮助你快速上手集成、验证能力、定位问题。
+---
+
+选择你当前接入的平台，查看对应的 Demo 工程说明：
+
+<CardGroup cols={3}>
+  <Card title="Android" icon="android" href="/getting-started/examples/android">
+    Java / Kotlin 两套示例工程，涵盖 SDK 引入、服务初始化、设备搜索、打印与扫描完整流程。
+  </Card>
+  <Card title="OpenHarmony" icon="circle-nodes" href="/getting-started/examples/openharmony">
+    ArkTS 示例工程，支持网络与 USB 打印机，包含 HAR 引入、签名配置与服务启动说明。
+  </Card>
+  <Card title="国产系统" icon="linux" href="/getting-started/examples/domestic">
+    C++ 示例工程，通过动态库 `libonesdk.so` 集成，提供 cmake 编译步骤和可直接运行的预编译产物。
+  </Card>
+</CardGroup>
+
+---
+
+## 通用参考
+
+<AccordionGroup>
+  <Accordion title="启动服务：入参说明">
+    各平台通过同一套 JSON 配置启动本地 HTTP 服务，字段如下：
+
+    | 名称 | 类型 | 说明 |
+    | --- | --- | --- |
+    | `port` | number | 端口号，`0` 表示随机选择可用端口 |
+    | `remote_access` | boolean | 是否允许远程访问，**正式发布须为 `false`** |
+    | `authorization` | string | 授权文件路径。Android/OpenHarmony 须以 `file://` 开头；国产系统可传文件路径或 `base64://` 编码字符串 |
+    | `working_directory` | string | 工作目录，需有读写权限 |
+    | `log.console` | boolean | 控制台日志，**正式发布须为 `false`** |
+    | `log.file.path` | string | 日志文件路径 |
+    | `log.file.max_size` | number | 单文件最大大小（MB），范围 8–128 |
+    | `log.file.max_files` | number | 最多文件数，范围 1–8（设为 `1` 时共有主文件 + 1 个旋转文件） |
+  </Accordion>
+
+  <Accordion title="启动服务：返回值说明">
+    | 名称 | 类型 | 说明 |
+    | --- | --- | --- |
+    | `result` | string | `success` \| `error_others` \| `error_setting` \| `error_runtime` |
+    | `description` | string | 结果描述，不应作为业务判断依据 |
+    | `port` | number | 实际启动端口 |
+    | `bearer_token` | string | 暂未实现，固定返回空字符串 |
+
+    ```json
+    {"bearer_token":"","description":"success","port":40129,"result":"success"}
+    ```
+  </Accordion>
+
+  <Accordion title="API 接口调用顺序">
+    ```mermaid
+    graph TB
+      APP运行 --> 启动HTTP服务
+      启动HTTP服务 --> 支持的设备列表
+      支持的设备列表 --> 局域网
+      局域网 --> 开始搜索设备
+      开始搜索设备 --> NET设备列表
+      NET设备列表 --> 取消搜索设备
+      支持的设备列表 --> USB
+      USB --> Android系统API获取设备列表
+      USB --> OpenHarmony设备列表
+      Android系统API获取设备列表 --> 指定需要使用的设备
+      OpenHarmony设备列表 --> 指定需要使用的设备
+      取消搜索设备 --> 指定需要使用的设备
+      指定需要使用的设备 --> Print
+      指定需要使用的设备 --> Scan
+      Print --> 创建打印作业
+      创建打印作业 --> 传入文件
+      传入文件 --> 获取打印作业
+      获取打印作业 --> 取消打印作业
+      Scan --> 创建扫描作业
+      创建扫描作业 --> 获取扫描作业
+      获取扫描作业 --> 取消扫描作业
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## 使用 Demo 前须知
+
+<Warning>
+  **流式接口**：以下接口持续返回数据，不是一次性响应，请在 Demo 中特别关注其处理方式：获取打印作业进度、获取扫描作业进度、GET 设备搜索结果。
+</Warning>
+
+- **单线程作业**：打印和扫描均为单线程，上一个作业未结束（状态非 `completed` / `canceled` / `failed`）不可创建新作业，否则返回 `409`。
+- **打印进度 ≠ 打印完成**：`GET /print/{job_id}` 返回 `completed` 代表 SDK 数据发送完毕，不代表打印机打印完成。
+- **图片传入结束**：传入图片打印时，所有图片发送后须再调一次文件传入接口并传入空数组，通知 SDK 传入结束。
+- **Demo 定位**：每个按钮对应一个接口，打印/扫描模块的按钮顺序即接口调用顺序。适合联调和能力验证，不建议直接用于正式工程。

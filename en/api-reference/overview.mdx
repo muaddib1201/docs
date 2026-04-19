@@ -1,0 +1,42 @@
+---
+title: Usage Overview
+description: Overview of the Pantum OneSDK HTTP interface groups and a typical request flow.
+---
+
+# Usage Overview
+
+All OneSDK interfaces are exposed through a local HTTP service. Once the service starts, your application can access it at:
+
+```text
+http://127.0.0.1:<port>
+```
+
+The port is assigned dynamically when the SDK starts, so it may change from one launch to the next.
+
+## Legend
+
+| Symbol | Meaning |
+|------|------|
+| `*` | Supported only on some models. Before using it, call [Model API Support Matrix (CSV)](/en/api-reference/print/print-model-deps-csv) to confirm compatibility. |
+
+## Typical Call Flow
+
+Here is a typical image-printing flow:
+
+<Steps>
+  <Step title="Confirm that the service is ready">
+    Call `GET /` to verify that the SDK has started and that `modules.print` is in a normal state.
+  </Step>
+  <Step title="Read device capabilities">
+    Call `GET /devices/supported` and construct print parameters based on `print_capability`.
+  </Step>
+  <Step title="Discover the target device">
+    Call `POST /devices/net` to start LAN search and obtain the `io` address from the result.
+  </Step>
+  <Step title="Create a print job">
+    Call `POST /print`, pass `job_target` (including `model_name` and `io`) together with `job_setting`, and receive a `job_id`.
+  </Step>
+  <Step title="Upload the print file">
+    Call `POST /print/{job_id}/patch` to upload an image or PDF file. For image printing, pass an empty array `[]` to indicate the end of input.
+  </Step>
+</Steps>

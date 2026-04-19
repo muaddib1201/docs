@@ -1,0 +1,35 @@
+---
+title: Error Codes
+description: Unified error response structure for the OneSDK HTTP interfaces.
+---
+
+# Error Codes
+
+All interfaces return a unified JSON structure when an error occurs:
+
+```json
+{
+  "error": "error_type",
+  "message": "error_details"
+}
+```
+
+| Field | Type | Description |
+|------|------|------|
+| `error` | `string` | Error type identifier |
+| `message` | `string` | Detailed error description |
+
+## Print Job Result Error Codes
+
+The `result` field of `GET /print/model_deps/print_result/{job_id}` returns the following enum values:
+
+| Value | Description |
+|----|------|
+| `success` | Print succeeded |
+| `error_timeout` | Print timed out |
+| `error_device_not_found` | Target device not found |
+| `error_model_name_mismatch` | Model name mismatch |
+| `error_connection_interrupt` | Connection interrupted |
+| `error_unsupported` | This operation is not supported by the current model |
+| `error_unsupported_firmware` | Firmware version is not supported |
+| `error_others` | Other error |

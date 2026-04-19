@@ -1,0 +1,93 @@
+---
+title: Print
+description: Common questions about print-job conflicts, progress behavior, file format limits, and custom paper sizes.
+---
+
+# Print
+
+### Why does the "Print Job (Create)" request return HTTP 409?
+
+HTTP 409 means a new print job was created before the previous one had finished. In practice, the print-job creation API was called again while the earlier job was still active. Check the following:
+
+1. Was the print job created but no file uploaded afterward? If so, make sure a valid file is uploaded.
+2. Was the uploaded PDF encrypted, and was the password incorrect? If so, provide the correct password, or cancel the print job and then decide whether a new job can be created based on the `status` field returned by the print-job progress API.
+3. If both job creation and file upload succeeded, check whether `status` in the print-job progress response is `completed`, `canceled`, or `failed`. A new print job can be created only when `status` is one of those three values.
+4. The result returned by `GET Print Job Result` **should not** be used on its own to decide whether a new print job can be created. That API only indicates whether the printer finished printing, not whether the SDK finished sending print data. Unless you can guarantee that the earlier `job_id` matches the one used in `GET Print Job Result`, use item 3 as the deciding condition.
+
+---
+
+### Why does the SDK report print progress as completed while the printer is still printing?
+
+The progress reported by the SDK reflects how much print data the SDK has sent to the printer. It **does not represent the printer's actual print progress**. At present, printer firmware does not report print progress back to the SDK. Some models do support a final print result; see the `GET Print Job Result` API for details.
+
+---
+
+### Does the SDK support Word, Excel, PPT, or other document formats?
+
+No. The SDK currently supports only **PDF documents** and **images**. Supported image formats are JPEG, PNG, and BMP. If you need to print other document formats, convert them into PDF or a supported image format before calling the SDK.
+
+---
+
+### Does the SDK support printing multiple PDF documents in a single job?
+
+No. Each print job supports only one PDF document, although multiple images are allowed. If you need to print several PDFs, merge them into a single PDF before uploading.
+
+---
+
+### How do I configure custom paper size printing?
+
+**Step 1**: Call "GET Supported Device List" and confirm that `print_capability.media_size` includes an item in the format `Custom ({minWidth-maxWidth}x{minHeight-maxHeight}mm)`. For example:
+
+```json
+{
+  "print_capability": {
+    "media_size": [
+      "A4 (210x297mm)",
+      "Custom ({75-218}x{148-360}mm)"
+    ]
+  }
+}
+```
+
+`Custom ({75-218}x{148-360}mm)` means the model supports custom paper sizes with a width range of 75-218 mm and a height range of 148-360 mm.
+
+**Step 2**: When calling "POST Print Job (Create)", set `job_setting.media_size` to the custom size string in the same format as the item in `print_capability.media_size`. For example, for 99 x 210 mm paper:
+
+```json
+POST /print
+
+{
+  "job_target": {
+    "model_name": "xxx series",
+    "io": "ipv4://x.x.x.x"
+  },
+  "job_setting": {
+    "copies": 1,
+    "sides": "one_sided",
+    "media_size": "Custom (99x210mm)",
+    "media_type": "paper_plain"
+  }
+}
+```
+
+---
+
+### What should I do if the print interface errors after uploading image files?
+
+The `POST /print/{job_id}/patch` interface accepts either a PDF file or image files (BMP / JPEG / PNG), and it also supports uploading image files while printing.
+
+After receiving image files, the SDK will **keep waiting** for more until it receives an empty array. Because of that, once all images have been uploaded, the caller must **call the API one more time with an empty array** to signal that image upload is complete.
+
+```ts
+// Image printing
+for (let i = 0; i < printFile.length; i++) {
+  input.image.push({ path: printFile[i], rotation: 0 });
+}
+TestApi.inputPrintJobFile(jobId, input).then((response: Response) => {
+  // An empty array indicates that image upload is finished
+  input.image = [];
+  TestApi.inputPrintJobFile(jobId, input).then((response: Response) => {
+    // ...
+  });
+});
+```

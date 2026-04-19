@@ -1,0 +1,42 @@
+/* 强制使用等宽字体，确保目录树中的 box-drawing 字符（│ ├ └ ─）宽度一致 */
+html body pre,
+html body pre code {
+  font-family: ui-monospace, Menlo, Consolas, "Courier New", monospace;
+}
+
+#content-container,
+#content-area,
+#sidebar-content,
+#navigation-items,
+#table-of-contents {
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+#content-container::-webkit-scrollbar,
+#content-area::-webkit-scrollbar,
+#sidebar-content::-webkit-scrollbar,
+#navigation-items::-webkit-scrollbar,
+#table-of-contents::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+#content-container::-webkit-scrollbar-thumb,
+#content-area::-webkit-scrollbar-thumb,
+#sidebar-content::-webkit-scrollbar-thumb,
+#navigation-items::-webkit-scrollbar-thumb,
+#table-of-contents::-webkit-scrollbar-thumb {
+  background: rgba(107, 114, 128, 0.45);
+  border: 3px solid transparent;
+  border-radius: 9999px;
+  background-clip: content-box;
+}
+
+#content-container::-webkit-scrollbar-track,
+#content-area::-webkit-scrollbar-track,
+#sidebar-content::-webkit-scrollbar-track,
+#navigation-items::-webkit-scrollbar-track,
+#table-of-contents::-webkit-scrollbar-track {
+  background: transparent;
+}

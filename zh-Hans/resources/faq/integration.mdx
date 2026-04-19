@@ -1,0 +1,75 @@
+---
+title: 集成问题
+description: OneSDK 集成配置、Demo 使用、依赖冲突等常见问题。
+---
+
+# 集成问题
+
+### 创建打印任务如何传参数？
+
+创建打印任务的接口说明详见接口文档"POST 打印作业（创建）"章节，其中对参数有详细说明。
+
+打印参数 JSON 数据中，每个 key 的值来源于打印机的打印能力。打印能力通过"GET 支持设备列表"接口返回。
+
+- 当请求参数 `model_name` 和 `usb_pid` 传入空字符串时，返回 SDK 所有支持的设备及能力；
+- 当传入指定值时，若支持该设备，则返回指定设备的设备信息。
+
+建议每次进入打印相关逻辑之前，先获取指定设备的设备信息和打印能力。
+
+---
+
+### 如何使用 SDK Demo 工程？
+
+SDK Demo 工程中每个按钮基本对应一个 API 接口请求示例。打印、扫描模块中，按钮的上下顺序代表了整个打印、扫描流程的 API 接口执行顺序。
+
+打印进度、扫描进度、获取搜索到的设备列表、Ping 设备列表等接口的数据通过**流式数据**持续返回，请注意在 Demo 工程中观察相关使用方式。
+
+---
+
+### HAR 包依赖库冲突如何解决？
+
+`onesdk.har` 依赖并打包了 `libusb1.0.so`，可能与其他 HAR 包的依赖库产生冲突。
+
+可参考官方说明文档解决冲突：[HarmonyOS HAR 依赖冲突处理](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hvigor-cpp-V5?catalogVersion=V5)
+
+<Note>
+为保证 SDK 功能正常，建议优先打包 `onesdk.har` 内的库文件。
+</Note>
+
+---
+
+### POST 打印作业传入文件的参数格式是什么？
+
+接口路径：`POST /print/{job_id}/patch`
+
+支持传入 PDF 文件或图片文件（BMP、JPEG、PNG）。
+
+**图片打印示例：**
+
+```json
+{
+  "job_input": {
+    "image": [
+      { "path": "/path/to/image1.jpeg", "rotation": 0 },
+      { "path": "/path/to/image2.bmp",  "rotation": 0 },
+      { "path": "/path/to/image3.png",  "rotation": 90 }
+    ]
+  }
+}
+```
+
+**PDF 打印示例：**
+
+```json
+{
+  "job_input": {
+    "pdf": {
+      "path": "/path/to/1.pdf",
+      "password": "12345678",
+      "pages": [
+        { "index": 1, "rotation": 90 }
+      ]
+    }
+  }
+}
+```

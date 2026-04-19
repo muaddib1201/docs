@@ -1,0 +1,42 @@
+---
+title: 使用概述
+description: Pantum OneSDK HTTP 接口的分组说明与典型调用流程。
+---
+
+# 使用概述
+
+OneSDK 的所有接口均以本地 HTTP 服务的形式提供。服务启动后，应用通过以下地址访问：
+
+```
+http://127.0.0.1:<port>
+```
+
+端口号由 SDK 启动时动态分配并返回，每次启动可能不同。
+
+## 标识说明
+
+| 标识 | 含义 |
+|------|------|
+| `*` | 仅部分机型支持，使用前请先调用[机型接口支持情况（CSV）](/api-reference/print/print-model-deps-csv)确认兼容性 |
+
+## 典型调用流程
+
+以图片打印为例：
+
+<Steps>
+  <Step title="确认服务就绪">
+    调用 `GET /` 确认 SDK 已启动，`modules.print` 状态正常。
+  </Step>
+  <Step title="读取机型能力">
+    调用 `GET /devices/supported`，根据 `print_capability` 构造打印参数。
+  </Step>
+  <Step title="发现目标设备">
+    调用 `POST /devices/net` 启动局域网搜索，从返回结果中获取 `io` 地址。
+  </Step>
+  <Step title="创建打印作业">
+    调用 `POST /print`，传入 `job_target`（含 `model_name` 和 `io`）与 `job_setting`，返回 `job_id`。
+  </Step>
+  <Step title="传入打印文件">
+    调用 `POST /print/{job_id}/patch` 传入图片或 PDF 文件；图片打印传入空数组 `[]` 表示结束。
+  </Step>
+</Steps>

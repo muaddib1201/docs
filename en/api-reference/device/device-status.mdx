@@ -1,0 +1,19 @@
+---
+title: Get Device Status
+description: Retrieve static information (version, serial number, and more) and dynamic information (supplies, status list, trays, page counters, and more) for the specified device through a blocking call.
+openapi: openapi/onesdk-core.yaml POST /device/status/get
+---
+
+<Note>
+  This is a blocking call. On success it returns immediately; otherwise it waits until timeout. `io` supports IPv4 and IPv6. USB is supported only on Linux, macOS, and Android.
+</Note>
+
+<Note>
+  Format of `dynamic.status[].name`: info (`STATUS_I_`), warning (`STATUS_W_`), error (`STATUS_E_`), fault (`STATUS_F_`). If the value is a 10-character hexadecimal string such as `0x12345678`, it means that status is not yet supported by the SDK and can be ignored.
+
+  Enum values for `dynamic.status[].param` can be confirmed by downloading the CSV from [Device Status List (CSV)](/en/api-reference/device/device-status-csv).
+</Note>
+
+<Note>
+  When `result != success`, both `static` and `dynamic` are `null`.
+</Note>

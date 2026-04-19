@@ -1,0 +1,126 @@
+---
+title: Android Demo
+description: Java / Kotlin 示例工程的集成步骤、初始化方式与验证路径。
+---
+
+Demo 工程提供 **Java** 和 **Kotlin** 两个版本，结构完全一致，可按项目语言直接选用。
+
+## 工程文件结构
+
+```text
+app/
+├── libs/
+│   └── onesdk.aar           ← SDK 文件
+└── src/main/
+    ├── assets/
+    │   └── <Authorization>  ← 授权文件
+    └── java/lld/
+        └── LLDHttpSdk.*     ← HTTP 服务启动封装
+```
+
+---
+
+## 集成步骤
+
+<Steps>
+  <Step title="引入 SDK">
+    将 `onesdk.aar` 放入 `app/libs/`，在模块级 `build.gradle` 中添加依赖：
+
+    ```gradle
+    dependencies {
+        implementation files("libs/onesdk.aar")
+    }
+    ```
+  </Step>
+
+  <Step title="放置授权文件">
+    将授权文件放入 `app/src/main/assets/`。
+
+    <Warning>
+      授权文件与 ApplicationId 绑定。Demo 中的测试授权文件不可用于正式工程，需联系相关业务人员申请对应授权文件。
+    </Warning>
+  </Step>
+
+  <Step title="在 Application 中启动服务">
+    在 `AndroidManifest.xml` 中注册自定义 Application，并在 `onCreate()` 中初始化：
+
+    <Tabs>
+      <Tab title="Kotlin">
+        ```kotlin
+        class App : Application() {
+            override fun onCreate() {
+                super.onCreate()
+                val isSuccess = LLDHttpSdk.initLLDHttpServer(this)
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:${LLDHttpSdk.port}"
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="Java">
+        ```java
+        public class App extends Application {
+            @Override
+            public void onCreate() {
+                super.onCreate();
+                boolean isSuccess = LLDHttpSdk.initLLDHttpServer(this);
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:" + LLDHttpSdk.port;
+                }
+            }
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    `initLLDHttpServer` 内部调用 `Server.shared().start_http_server(context, configJson)`，核心配置如下：
+
+    <Tabs>
+      <Tab title="Kotlin">
+        ```kotlin
+        val initConfig = LLDHttpServerInitConfig().apply {
+            working_directory = workPath
+            port = 0
+            remote_access = false                          // 正式发布须为 false
+            authorization = "file://$authFilePath"         // 须以 file:// 开头
+            setLog(httpLog(false, httpFile("$workPath/file.log", 8, 1)))
+        }
+        val result = Server.shared().start_http_server(context, Gson().toJson(initConfig))
+        ```
+      </Tab>
+      <Tab title="Java">
+        ```java
+        LLDHttpServerInitConfig initConfig = new LLDHttpServerInitConfig();
+        initConfig.setWorking_directory(workPath);
+        initConfig.setPort(0);
+        initConfig.setRemote_access(false);                // 正式发布须为 false
+        initConfig.setAuthorization("file://" + authFilePath); // 须以 file:// 开头
+        initConfig.setLog(new httpLog(false, new httpFile(workPath + "file.log", 8, 1)));
+
+        String result = Server.shared().start_http_server(context, new Gson().toJson(initConfig));
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="验证服务">
+    确认 `LLDHttpSdk.isInitSuccess == true`，然后请求根接口：
+
+    ```bash
+    curl http://127.0.0.1:{port}/
+    ```
+
+    再验证授权和支持机型：
+
+    ```bash
+    curl http://127.0.0.1:{port}/devices/supported
+    ```
+  </Step>
+</Steps>
+
+---
+
+## 参数与返回值
+
+启动参数和返回值的完整字段说明，参见 [示例工程 — 通用参考](/getting-started/examples#通用参考)。

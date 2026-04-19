@@ -1,0 +1,9 @@
+---
+title: Get Page RAW
+description: Render a specified page in a preview job as RAW pixel data and return it as a binary stream. Supports multiple pixel layouts, scaling modes, and margins.
+openapi: openapi/onesdk-core.yaml POST /pdf/preview/{job_id}/{page_index}/raw/get
+---
+
+<Note>
+  The returned RAW data is **4-byte aligned** for each row.
+</Note>

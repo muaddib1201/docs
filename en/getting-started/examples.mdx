@@ -1,0 +1,92 @@
+---
+title: Overview
+description: Entry point for platform-specific demo projects, including setup guidance, capability validation, and troubleshooting notes.
+---
+
+Choose the platform you are working on and open the matching demo guide:
+
+<CardGroup cols={3}>
+  <Card title="Android" icon="android" href="/en/getting-started/examples/android">
+    Java and Kotlin sample projects covering SDK import, service initialization, device discovery, and the full print and scan workflow.
+  </Card>
+  <Card title="OpenHarmony" icon="circle-nodes" href="/en/getting-started/examples/openharmony">
+    ArkTS sample project supporting network and USB printers, including HAR import, signing configuration, and service startup instructions.
+  </Card>
+  <Card title="Domestic OS" icon="linux" href="/en/getting-started/examples/domestic">
+    C++ sample project integrated through the dynamic library `libonesdk.so`, including CMake build steps and prebuilt artifacts you can run directly.
+  </Card>
+</CardGroup>
+
+---
+
+## General Reference
+
+<AccordionGroup>
+  <Accordion title="Service startup: input parameters">
+    All platforms start the local HTTP service with the same JSON configuration. The fields are:
+
+    | Name | Type | Description |
+    | --- | --- | --- |
+    | `port` | number | Port number; `0` means select an available port automatically |
+    | `remote_access` | boolean | Whether remote access is allowed; **must be `false` in production** |
+    | `authorization` | string | Authorization file path. Android/OpenHarmony must use a `file://` prefix; domestic operating systems can pass a file path or a `base64://`-encoded string |
+    | `working_directory` | string | Working directory with read/write permission |
+    | `log.console` | boolean | Console logging; **must be `false` in production** |
+    | `log.file.path` | string | Log file path |
+    | `log.file.max_size` | number | Maximum size of each log file in MB, range 8-128 |
+    | `log.file.max_files` | number | Maximum number of log files, range 1-8 (`1` means one main file plus one rotated file) |
+  </Accordion>
+
+  <Accordion title="Service startup: return values">
+    | Name | Type | Description |
+    | --- | --- | --- |
+    | `result` | string | `success` \| `error_others` \| `error_setting` \| `error_runtime` |
+    | `description` | string | Result description; should not be used as business logic |
+    | `port` | number | Actual startup port |
+    | `bearer_token` | string | Not implemented yet; currently always an empty string |
+
+    ```json
+    {"bearer_token":"","description":"success","port":40129,"result":"success"}
+    ```
+  </Accordion>
+
+  <Accordion title="API call sequence">
+    ```mermaid
+    graph TB
+      AppLaunch --> StartHTTPService
+      StartHTTPService --> SupportedDeviceList
+      SupportedDeviceList --> LAN
+      LAN --> StartDeviceSearch
+      StartDeviceSearch --> NETDeviceList
+      NETDeviceList --> CancelDeviceSearch
+      SupportedDeviceList --> USB
+      USB --> AndroidSystemAPIGetDeviceList
+      USB --> OpenHarmonyDeviceList
+      AndroidSystemAPIGetDeviceList --> SelectTargetDevice
+      OpenHarmonyDeviceList --> SelectTargetDevice
+      CancelDeviceSearch --> SelectTargetDevice
+      SelectTargetDevice --> Print
+      SelectTargetDevice --> Scan
+      Print --> CreatePrintJob
+      CreatePrintJob --> UploadFiles
+      UploadFiles --> GetPrintJob
+      GetPrintJob --> CancelPrintJob
+      Scan --> CreateScanJob
+      CreateScanJob --> GetScanJob
+      GetScanJob --> CancelScanJob
+    ```
+  </Accordion>
+</AccordionGroup>
+
+---
+
+## Notes Before Using the Demos
+
+<Warning>
+  **Streaming interfaces**: the following APIs keep returning data instead of producing a single one-time response. Pay close attention to how the demos handle them: print-job progress, scan-job progress, and GET device search results.
+</Warning>
+
+- **Single-threaded jobs**: printing and scanning are both single-threaded. If the previous job has not ended (`completed` / `canceled` / `failed`), you cannot create a new job, otherwise the API returns `409`.
+- **Print progress is not print completion**: `GET /print/{job_id}` returning `completed` means the SDK has finished sending data. It does not mean the printer has finished printing.
+- **Image input completion**: when printing images, after all images are sent you must call the file-upload interface one more time with an empty array to notify the SDK that image input is complete.
+- **Purpose of the demos**: each button roughly maps to one API call. In the print and scan sections, the button order reflects the intended API sequence. The demos are useful for testing integration and validating capabilities, but they are not intended to be dropped directly into production projects.

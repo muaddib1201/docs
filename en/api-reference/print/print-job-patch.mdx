@@ -1,0 +1,13 @@
+---
+title: Upload Print Files
+description: Upload image files or a PDF file to the specified print job, with support for streaming upload while printing.
+openapi: openapi/onesdk-core.yaml POST /print/{job_id}/patch
+---
+
+<Note>
+  Supported image formats: BMP, JPEG, PNG. Passing an empty array `[]` indicates the end of file input.
+</Note>
+
+<Warning>
+  For the `e_model_series_inkjet_6108` series, printing starts only after an empty array is uploaded to indicate the end of input.
+</Warning>

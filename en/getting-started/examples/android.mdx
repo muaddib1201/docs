@@ -1,0 +1,126 @@
+---
+title: Android Demo
+description: Integration steps, initialization, and verification flow for the Java and Kotlin sample projects.
+---
+
+The demo project provides both **Java** and **Kotlin** versions. Their structure is identical, so you can pick the one that matches your project language.
+
+## Project File Structure
+
+```text
+app/
+├── libs/
+│   └── onesdk.aar           ← SDK file
+└── src/main/
+    ├── assets/
+    │   └── <Authorization>  ← Authorization file
+    └── java/lld/
+        └── LLDHttpSdk.*     ← HTTP service startup wrapper
+```
+
+---
+
+## Integration Steps
+
+<Steps>
+  <Step title="Add the SDK">
+    Place `onesdk.aar` in `app/libs/` and add the dependency in module-level `build.gradle`:
+
+    ```gradle
+    dependencies {
+        implementation files("libs/onesdk.aar")
+    }
+    ```
+  </Step>
+
+  <Step title="Place the authorization file">
+    Put the authorization file in `app/src/main/assets/`.
+
+    <Warning>
+      The authorization file is bound to the ApplicationId. The test authorization file used in the demo cannot be used in a production project. Contact the relevant business owner to request the matching authorization file.
+    </Warning>
+  </Step>
+
+  <Step title="Start the service in Application">
+    Register your custom Application in `AndroidManifest.xml`, and initialize it in `onCreate()`:
+
+    <Tabs>
+      <Tab title="Kotlin">
+        ```kotlin
+        class App : Application() {
+            override fun onCreate() {
+                super.onCreate()
+                val isSuccess = LLDHttpSdk.initLLDHttpServer(this)
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:${LLDHttpSdk.port}"
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="Java">
+        ```java
+        public class App extends Application {
+            @Override
+            public void onCreate() {
+                super.onCreate();
+                boolean isSuccess = LLDHttpSdk.initLLDHttpServer(this);
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:" + LLDHttpSdk.port;
+                }
+            }
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    `initLLDHttpServer` internally calls `Server.shared().start_http_server(context, configJson)`. The core configuration is:
+
+    <Tabs>
+      <Tab title="Kotlin">
+        ```kotlin
+        val initConfig = LLDHttpServerInitConfig().apply {
+            working_directory = workPath
+            port = 0
+            remote_access = false                          // Must be false in production
+            authorization = "file://$authFilePath"         // Must start with file://
+            setLog(httpLog(false, httpFile("$workPath/file.log", 8, 1)))
+        }
+        val result = Server.shared().start_http_server(context, Gson().toJson(initConfig))
+        ```
+      </Tab>
+      <Tab title="Java">
+        ```java
+        LLDHttpServerInitConfig initConfig = new LLDHttpServerInitConfig();
+        initConfig.setWorking_directory(workPath);
+        initConfig.setPort(0);
+        initConfig.setRemote_access(false);                // Must be false in production
+        initConfig.setAuthorization("file://" + authFilePath); // Must start with file://
+        initConfig.setLog(new httpLog(false, new httpFile(workPath + "file.log", 8, 1)));
+
+        String result = Server.shared().start_http_server(context, new Gson().toJson(initConfig));
+        ```
+      </Tab>
+    </Tabs>
+  </Step>
+
+  <Step title="Verify the service">
+    Confirm `LLDHttpSdk.isInitSuccess == true`, then request the root endpoint:
+
+    ```bash
+    curl http://127.0.0.1:{port}/
+    ```
+
+    Then verify authorization and supported models:
+
+    ```bash
+    curl http://127.0.0.1:{port}/devices/supported
+    ```
+  </Step>
+</Steps>
+
+---
+
+## Parameters and Return Values
+
+For full field descriptions of startup parameters and return values, see [Example Projects - General Reference](/en/getting-started/examples#general-reference).

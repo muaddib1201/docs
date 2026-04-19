@@ -1,0 +1,9 @@
+---
+title: Create Print Job
+description: Create a print job that supports both image and PDF printing.
+openapi: openapi/onesdk-core.yaml POST /print
+---
+
+<Note>
+  Because the interface is designed to support uploading files while printing, valid progress cannot be calculated before file upload is complete, so `job_info.progress` remains `0`.
+</Note>

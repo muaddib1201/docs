@@ -1,0 +1,88 @@
+---
+title: OpenHarmony Demo
+description: Integration steps, signing configuration, and service startup for the ArkTS sample project.
+---
+
+## Project File Structure
+
+```text
+entry/
+├── libs/arm64-v8a/
+│   └── libonesdk.so         ← SDK dynamic library
+└── src/main/resources/
+    └── rawfile/auth/
+        └── <Authorization>  ← Authorization file
+```
+
+---
+
+## Integration Steps
+
+<Steps>
+  <Step title="Add the HAR package">
+    Place `onesdk.har` in the project, update the dependency configuration in `oh-package.json5`, and then run:
+
+    ```bash
+    ohpm install
+    ```
+
+    <Warning>
+      `onesdk.har` packages `libusb1.0.so`, which may conflict with dependencies from other HAR packages. If a conflict occurs, adjust the packaging rules in `build-profile.json5`. To keep SDK functionality working correctly, it is recommended to package the library shipped inside `onesdk.har` first. Reference: [Resolve HAR dependency conflicts](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hvigor-cpp-V5?catalogVersion=V5)
+    </Warning>
+
+    For HAR import and resource references, see the [official documentation](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-har-import-V5).
+  </Step>
+
+  <Step title="Place the authorization file">
+    Put the authorization file in `entry/src/main/resources/rawfile/auth/`.
+  </Step>
+
+  <Step title="Configure signing">
+    Open **Project Structure → Signing Configs**, enable **Automatically generate signature**, and click Apply.
+  </Step>
+
+  <Step title="Start the HTTP service">
+    Call the following at the app entry point:
+
+    ```typescript
+    const result = Server.shared.start_http_server(JSON.stringify({
+        port: 0,
+        remote_access: false,                          // Must be false in production
+        authorization: "file://" + authorizationPath,  // Must start with file://
+        working_directory: workingDirectory,
+        log: {
+            console: false,
+            file: {
+                path: workingDirectory + "/onesdk.log",
+                max_size: 8,
+                max_files: 1
+            }
+        }
+    }));
+    ```
+  </Step>
+
+  <Step title="Verify the service">
+    Confirm the startup result returns `result: "success"`, then request the root endpoint:
+
+    ```bash
+    curl http://127.0.0.1:{port}/
+    ```
+
+    Then verify authorization and supported models:
+
+    ```bash
+    curl http://127.0.0.1:{port}/devices/supported
+    ```
+
+    <Note>
+      OpenHarmony supports both network printers (wired and Wi-Fi) and USB printers. Retrieve the USB device list through `GET /devices/usb`. If you run into USB permission issues, see the [FAQ](/en/resources/faq).
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## Parameters and Return Values
+
+For full field descriptions of startup parameters and return values, see [Example Projects - General Reference](/en/getting-started/examples#general-reference).

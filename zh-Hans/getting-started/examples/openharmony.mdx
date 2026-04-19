@@ -1,0 +1,88 @@
+---
+title: OpenHarmony Demo
+description: ArkTS 示例工程的集成步骤、签名配置与服务启动说明。
+---
+
+## 工程文件结构
+
+```text
+entry/
+├── libs/arm64-v8a/
+│   └── libonesdk.so         ← SDK 动态库
+└── src/main/resources/
+    └── rawfile/auth/
+        └── <Authorization>  ← 授权文件
+```
+
+---
+
+## 集成步骤
+
+<Steps>
+  <Step title="引入 HAR 包">
+    将 `onesdk.har` 放入工程目录，更新 `oh-package.json5` 中的依赖配置，然后执行：
+
+    ```bash
+    ohpm install
+    ```
+
+    <Warning>
+      `onesdk.har` 内打包了 `libusb1.0.so`，可能与其他 HAR 包产生依赖冲突。如遇冲突，在 `build-profile.json5` 中调整打包规则，**建议优先打包 onesdk.har 内的库文件**以保证 SDK 功能正常。参考：[HAR 依赖库冲突解决](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-hvigor-cpp-V5?catalogVersion=V5)
+    </Warning>
+
+    引用 HAR 文件和资源参考[官方文档](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides-V5/ide-har-import-V5)。
+  </Step>
+
+  <Step title="放置授权文件">
+    将授权文件放入 `entry/src/main/resources/rawfile/auth/`。
+  </Step>
+
+  <Step title="配置签名">
+    打开 **Project Structure → Signing Configs**，勾选 **Automatically generate signature**，点击 Apply。
+  </Step>
+
+  <Step title="启动 HTTP 服务">
+    在应用入口调用：
+
+    ```typescript
+    const result = Server.shared.start_http_server(JSON.stringify({
+        port: 0,
+        remote_access: false,                          // 正式发布须为 false
+        authorization: "file://" + authorizationPath,  // 须以 file:// 开头
+        working_directory: workingDirectory,
+        log: {
+            console: false,
+            file: {
+                path: workingDirectory + "/onesdk.log",
+                max_size: 8,
+                max_files: 1
+            }
+        }
+    }));
+    ```
+  </Step>
+
+  <Step title="验证服务">
+    确认启动返回 `result: "success"`，然后请求根接口：
+
+    ```bash
+    curl http://127.0.0.1:{port}/
+    ```
+
+    再验证授权和支持机型：
+
+    ```bash
+    curl http://127.0.0.1:{port}/devices/supported
+    ```
+
+    <Note>
+      OpenHarmony 支持网络打印机（有线、WiFi）和 USB 打印机。USB 设备列表通过 `GET /devices/usb` 获取。如遇 USB 权限问题，参见 [常见问题](/resources/faq)。
+    </Note>
+  </Step>
+</Steps>
+
+---
+
+## 参数与返回值
+
+启动参数和返回值的完整字段说明，参见 [示例工程 — 通用参考](/getting-started/examples#通用参考)。

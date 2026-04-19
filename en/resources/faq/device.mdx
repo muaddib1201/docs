@@ -1,0 +1,10 @@
+---
+title: Device Management
+description: Common issues related to device status queries and status consistency.
+---
+
+# Device Management
+
+### Why is the status returned by the SDK inconsistent with the status shown on the printer panel?
+
+The status returned by the SDK depends on what the printer firmware reports. In some special cases, the printer panel shows a fault state, but the SDK does not return the corresponding state. For example, on the `e_model_series_4020` series, the printer panel may display "Tray out of paper Option 1-2", while the SDK returns "Print module idle". This behavior is determined by the printer firmware design, and in such cases the corresponding state is not reported.

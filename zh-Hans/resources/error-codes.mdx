@@ -1,0 +1,35 @@
+---
+title: 错误码
+description: OneSDK HTTP 接口错误响应结构说明。
+---
+
+# 错误码
+
+所有接口在发生错误时，均返回统一的 JSON 结构：
+
+```json
+{
+  "error": "错误类型",
+  "message": "错误详情"
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| `error` | `string` | 错误类型标识 |
+| `message` | `string` | 错误详细描述 |
+
+## 打印作业结果错误码
+
+`GET /print/model_deps/print_result/{job_id}` 接口的 `result` 字段返回以下枚举值：
+
+| 值 | 说明 |
+|----|------|
+| `success` | 打印成功 |
+| `error_timeout` | 打印超时 |
+| `error_device_not_found` | 未找到目标设备 |
+| `error_model_name_mismatch` | 机型名称不匹配 |
+| `error_connection_interrupt` | 连接中断 |
+| `error_unsupported` | 当前机型不支持此操作 |
+| `error_unsupported_firmware` | 固件版本不支持 |
+| `error_others` | 其他错误 |

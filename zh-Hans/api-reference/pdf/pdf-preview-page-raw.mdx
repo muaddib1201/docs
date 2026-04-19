@@ -1,0 +1,9 @@
+---
+title: 获取指定页 RAW
+description: 将指定预览作业的某一页渲染为 RAW 像素数据，以二进制流返回。支持多种像素排列模式、缩放模式和边距。
+openapi: openapi/onesdk-core.yaml POST /pdf/preview/{job_id}/{page_index}/raw/get
+---
+
+<Note>
+  返回的 RAW 数据每行按 **4 字节对齐**。
+</Note>

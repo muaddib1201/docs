@@ -1,0 +1,147 @@
+---
+title: Quickstart
+---
+
+<Tip>
+  This guide walks you through bringing up Pantum SDK and completing your first device discovery flow. For full setup steps, parameter details, and file layouts, see [Example Projects](/en/getting-started/examples).
+</Tip>
+
+## Supported Platforms
+
+| Platform | Minimum Version | SDK Delivery Format |
+| --- | --- | --- |
+| Android | Android 8.0 and later | `onesdk.aar` |
+| OpenHarmony | OpenHarmony 4.1 and later | `onesdk.har` |
+| Domestic operating systems | — | `libonesdk.so` + `api.h` |
+
+## Get Started
+
+<Steps titleSize="h5">
+  <Step title="Start the HTTP Service">
+    After adding the SDK files and authorization file to your project, call the startup interface when the application launches. Once the service is running, the SDK exposes all capabilities through a local HTTP endpoint.
+
+    <Tabs>
+      <Tab title="Android (Kotlin)">
+        Call this in `Application.onCreate()`:
+
+        ```kotlin
+        class App : Application() {
+            override fun onCreate() {
+                super.onCreate()
+                val isSuccess = LLDHttpSdk.initLLDHttpServer(this)
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:${LLDHttpSdk.port}"
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="Android (Java)">
+        Call this in `Application.onCreate()`:
+
+        ```java
+        public class App extends Application {
+            @Override
+            public void onCreate() {
+                super.onCreate();
+                boolean isSuccess = LLDHttpSdk.initLLDHttpServer(this);
+                if (isSuccess) {
+                    LLDHttpSdk.baseUrl = "http://127.0.0.1:" + LLDHttpSdk.port;
+                }
+            }
+        }
+        ```
+      </Tab>
+      <Tab title="OpenHarmony (ArkTS)">
+        Call this at the app entry point:
+
+        ```typescript
+        const result = Server.shared.start_http_server(JSON.stringify({
+            port: 0,
+            remote_access: false,
+            authorization: "file://" + authorizationFilePath,
+            working_directory: workingDirectory,
+            log: { console: false, file: { path: logPath, max_size: 8, max_files: 1 } }
+        }));
+        ```
+      </Tab>
+      <Tab title="Domestic OS (C++)">
+        Include `api.h`, link `libonesdk.so`, and call the C API:
+
+        ```cpp
+        #include "api.h"
+
+        int main() {
+            const char* param = R"({
+                "port": 3883,
+                "remote_access": false,
+                "authorization": "/path/to/auth_file",
+                "working_directory": "/tmp/com.pantum.onesdk",
+                "log": { "console": false, "file": { "path": "/tmp/onesdk.log", "max_size": 8, "max_files": 1 } }
+            })";
+
+            const char* result = onesdk_start_http_server(param);
+            // Keep the process running...
+            pause();
+            onesdk_stop_http_server();
+        }
+        ```
+      </Tab>
+    </Tabs>
+
+    After a successful start, use the same base URL for all later interfaces:
+
+    ```text
+    http://127.0.0.1:{port}
+    ```
+
+    <Note>
+      On Android and OpenHarmony, the `authorization` path must begin with `file://`. On domestic operating systems, you can pass a plain file path directly, and `base64://`-encoded authorization content is also supported. See [Domestic OS Demo](/en/getting-started/examples/domestic) for details.
+    </Note>
+  </Step>
+
+  <Step title="Verify the Service Is Available">
+    Request the root endpoint to confirm that the local service has started successfully:
+
+    ```bash
+    curl -H "Connection: close" http://127.0.0.1:{port}/
+    ```
+
+    A normal response contains fields such as `meta.name`, `meta.version`, `modules.devices`, `modules.print`, and `modules.scan`.
+
+    If the request fails, check whether the SDK files were added correctly, whether the authorization path is correct, and whether the service successfully returned a port.
+  </Step>
+
+  <Step title="Read Supported Models">
+    Query the models and print capabilities supported by the SDK to confirm that the target device is supported and to obtain valid values for later print parameters:
+
+    ```bash
+    curl -H "Connection: close" http://127.0.0.1:{port}/devices/supported
+    ```
+
+    The response includes `device_info`, `print_capability`, `scan_capability`, and `fax_capability`.
+  </Step>
+
+  <Step title="Search for LAN Devices">
+    Start a network device search:
+
+    ```http
+    POST /devices/net
+    Content-Type: application/json
+
+    { "duration": 10, "interval": 2 }
+    ```
+
+    <Warning>
+      Search results are returned as **streaming data**. Print-job progress and scan-job progress are also streaming interfaces, so make sure your client handles them accordingly.
+    </Warning>
+
+    After discovering a device, record `model_name` and `io`. The `io` value is the key device identifier for later print and scan calls.
+  </Step>
+</Steps>
+
+## Next Steps
+
+- [Example Projects](/en/getting-started/examples) — full setup steps and file paths for each platform
+- [Android Demo](/en/getting-started/examples/android) · [OpenHarmony Demo](/en/getting-started/examples/openharmony) · [Domestic OS Demo](/en/getting-started/examples/domestic)
+- [Usage Overview](/en/api-reference/overview)

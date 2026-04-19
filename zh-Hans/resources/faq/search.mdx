@@ -1,0 +1,52 @@
+---
+title: 搜索问题
+description: USB 设备识别、libusb 错误排查与权限配置等常见问题。
+---
+
+# 搜索问题
+
+### 如何识别 USB 搜索到的设备是打印机？
+
+在安卓系统中，USB 设备识别由应用层 API 完成，SDK 无法过滤非打印机设备。通常情况下，打印机的设备名称格式为：**打印机型号 + Series**，例如：`M6100DW Series`。
+
+---
+
+### 搜索不到 USB 连接设备，hilog 提示 `LIBUSB_ERROR_ACCESS` 怎么处理？
+
+按以下步骤逐一排查：
+
+1. **检查授权文件支持的设备**：调用"GET 支持设备列表"接口确认 SDK/授权文件支持的设备列表中是否包含当前设备。
+2. **检查 USB 设备权限**：
+   ```sh
+   ls -l /dev/bus/usb/<bus>/<device>
+   ```
+3. 如 USB 设备无读写权限，请修改设备权限（临时方法，参见下方说明）后重试。
+4. 如无法解决，请咨询系统厂商设置 USB 权限。
+
+<Warning>
+`busid` 和 `deviceid` 为插入设备时系统分配，拔插设备后可能发生变化。下述方法仅供临时设置 USB 权限，如需长期有效的方法，请咨询系统厂商。
+</Warning>
+
+**临时修改 USB 设备权限（示例）：**
+
+```sh
+# 1. 获取当前连接的 USB 设备信息
+lsusb
+# Bus 001 Device 005: ID 232b:0835
+
+# 2. 修改设备权限（赋予所有用户读写权限）
+sudo chmod 666 /dev/bus/usb/001/005
+```
+
+---
+
+### 搜索不到 USB 连接设备，hilog 提示 `LIBUSB_ERROR_OTHER` 怎么处理？
+
+此错误通常由 USB 权限不足引起，处理方法与 `LIBUSB_ERROR_ACCESS` 相同：
+
+1. 调用 `lsusb` 获取打印机的 `busid` 和 `deviceid`；
+2. 使用 `chmod 666` 临时授权：
+   ```sh
+   sudo chmod 666 /dev/bus/usb/<bus>/<device>
+   ```
+3. 如问题持续，请咨询系统厂商获取长期有效的 USB 权限配置方案。

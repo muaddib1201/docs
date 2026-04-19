@@ -1,0 +1,13 @@
+---
+title: Print Job Result*
+description: Retrieve the print result of a specified print job. Supported only on some models.
+openapi: openapi/onesdk-core.yaml GET /print/model_deps/print_result/{job_id}
+---
+
+<Warning>
+  This interface is supported only by some models. To confirm detailed support, call [Model API Support Matrix (CSV)](/en/api-reference/print/print-model-deps-csv) and download the CSV file.
+</Warning>
+
+<Warning>
+  While this interface call is in progress, do not call `DELETE /print/{job_id}`, otherwise a 404 error will be returned.
+</Warning>

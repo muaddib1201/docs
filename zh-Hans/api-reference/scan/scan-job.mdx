@@ -1,0 +1,13 @@
+---
+title: 扫描作业
+description: 获取指定扫描作业的状态、设置和已扫描文件列表，支持阻塞式和流式两种响应方式。
+openapi: openapi/onesdk-core.yaml GET /scan/{job_id}
+---
+
+<Note>
+  此接口为阻塞式调用，作业结束前会持续阻塞。可通过设置请求头 `Accept: text/event-stream` 以 SSE 流式方式接收实时进度更新。
+</Note>
+
+<Note>
+  `job_progress.progress` 表示当前页面数据接收进度（0–100）。
+</Note>

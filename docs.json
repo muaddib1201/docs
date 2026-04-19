@@ -1,122 +1,287 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
-  "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+  "appearance": {
+    "default": "system"
   },
-  "favicon": "/favicon.svg",
+  "name": "Pantum SDK Docs",
+  "description": "Pantum SDK integration guides, API references, and operational documentation.",
+  "favicon": "/favicon.ico",
+  "colors": {
+    "primary": "#1857FF",
+    "light": "#DFF8F1",
+    "dark": "#0F172A"
+  },
+  "logo": {
+    "light": "/logo-light.png",
+    "dark": "/logo-dark.png"
+  },
+  "api": {
+    "playground": {
+      "display": "simple"
+    }
+  },
   "navigation": {
-    "tabs": [
+    "languages": [
       {
-        "tab": "Guides",
-        "groups": [
+        "language": "zh-Hans",
+        "default": true,
+        "tabs": [
           {
-            "group": "Getting started",
-            "pages": [
-              "index",
-              "quickstart",
-              "development"
+            "tab": "使用指南",
+            "groups": [
+              {
+                "group": "开始使用",
+                "pages": [
+                  "zh-Hans/getting-started/overview",
+                  "zh-Hans/getting-started/quickstart"
+                ]
+              },
+              {
+                "group": "示例工程",
+                "pages": [
+                  "zh-Hans/getting-started/examples",
+                  "zh-Hans/getting-started/examples/android",
+                  "zh-Hans/getting-started/examples/openharmony",
+                  "zh-Hans/getting-started/examples/domestic"
+                ]
+              }
             ]
           },
           {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
+            "tab": "API 文档",
+            "groups": [
+              {
+                "group": "API 指引",
+                "pages": [
+                  "zh-Hans/api-reference/overview",
+                  "zh-Hans/api-reference/error-codes"
+                ]
+              },
+              {
+                "group": "核心 API",
+                "pages": [
+                  "zh-Hans/api-reference/core/service-info",
+                  "zh-Hans/api-reference/core/supported-devices",
+                  "zh-Hans/api-reference/core/supported-devices-csv",
+                  "zh-Hans/api-reference/core/usb-devices",
+                  "zh-Hans/api-reference/core/net-devices-start",
+                  "zh-Hans/api-reference/core/net-devices-cancel",
+                  "zh-Hans/api-reference/core/net-devices"
+                ]
+              },
+              {
+                "group": "打印 API",
+                "pages": [
+                  "zh-Hans/api-reference/print/print-jobs",
+                  "zh-Hans/api-reference/print/print-job-create",
+                  "zh-Hans/api-reference/print/print-job-patch",
+                  "zh-Hans/api-reference/print/print-job-cancel",
+                  "zh-Hans/api-reference/print/print-job-delete",
+                  "zh-Hans/api-reference/print/print-model-deps-csv",
+                  "zh-Hans/api-reference/print/print-job-result"
+                ]
+              },
+              {
+                "group": "扫描 API",
+                "pages": [
+                  "zh-Hans/api-reference/scan/scan-jobs",
+                  "zh-Hans/api-reference/scan/scan-job-create",
+                  "zh-Hans/api-reference/scan/scan-job",
+                  "zh-Hans/api-reference/scan/scan-job-cancel",
+                  "zh-Hans/api-reference/scan/scan-job-delete"
+                ]
+              },
+              {
+                "group": "PDF API",
+                "pages": [
+                  "zh-Hans/api-reference/pdf/pdf-create",
+                  "zh-Hans/api-reference/pdf/pdf-preview-job-create",
+                  "zh-Hans/api-reference/pdf/pdf-preview-jobs",
+                  "zh-Hans/api-reference/pdf/pdf-preview-page-meta",
+                  "zh-Hans/api-reference/pdf/pdf-preview-page-bmp",
+                  "zh-Hans/api-reference/pdf/pdf-preview-page-raw",
+                  "zh-Hans/api-reference/pdf/pdf-preview-job-delete"
+                ]
+              },
+              {
+                "group": "设备管理 API",
+                "pages": [
+                  "zh-Hans/api-reference/device/device-status",
+                  "zh-Hans/api-reference/device/device-status-csv",
+                  "zh-Hans/api-reference/device/device-slp",
+                  "zh-Hans/api-reference/device/device-sleep-time"
+                ]
+              }
             ]
           },
           {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
+            "tab": "更新日志",
+            "groups": [
+              {
+                "group": "更新日志",
+                "pages": [
+                  "zh-Hans/resources/changelog"
+                ]
+              }
             ]
           },
           {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+            "tab": "常见问题",
+            "groups": [
+              {
+                "group": "常见问题",
+                "pages": [
+                  "zh-Hans/resources/faq"
+                ]
+              },
+              {
+                "group": "分类问题",
+                "pages": [
+                  "zh-Hans/resources/faq/integration",
+                  "zh-Hans/resources/faq/search",
+                  "zh-Hans/resources/faq/print",
+                  "zh-Hans/resources/faq/scan",
+                  "zh-Hans/resources/faq/device"
+                ]
+              }
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
-        "groups": [
+        "language": "en",
+        "tabs": [
           {
-            "group": "API documentation",
-            "pages": [
-              "api-reference/introduction"
+            "tab": "Guides",
+            "groups": [
+              {
+                "group": "Getting Started",
+                "pages": [
+                  "en/getting-started/overview",
+                  "en/getting-started/quickstart"
+                ]
+              },
+              {
+                "group": "Examples",
+                "pages": [
+                  "en/getting-started/examples",
+                  "en/getting-started/examples/android",
+                  "en/getting-started/examples/openharmony",
+                  "en/getting-started/examples/domestic"
+                ]
+              }
             ]
           },
           {
-            "group": "Endpoint examples",
-            "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+            "tab": "API Docs",
+            "groups": [
+              {
+                "group": "API Reference",
+                "pages": [
+                  "en/api-reference/overview",
+                  "en/api-reference/error-codes"
+                ]
+              },
+              {
+                "group": "Core APIs",
+                "pages": [
+                  "en/api-reference/core/service-info",
+                  "en/api-reference/core/supported-devices",
+                  "en/api-reference/core/supported-devices-csv",
+                  "en/api-reference/core/usb-devices",
+                  "en/api-reference/core/net-devices-start",
+                  "en/api-reference/core/net-devices-cancel",
+                  "en/api-reference/core/net-devices"
+                ]
+              },
+              {
+                "group": "Print APIs",
+                "pages": [
+                  "en/api-reference/print/print-jobs",
+                  "en/api-reference/print/print-job-create",
+                  "en/api-reference/print/print-job-patch",
+                  "en/api-reference/print/print-job-cancel",
+                  "en/api-reference/print/print-job-delete",
+                  "en/api-reference/print/print-model-deps-csv",
+                  "en/api-reference/print/print-job-result"
+                ]
+              },
+              {
+                "group": "Scan APIs",
+                "pages": [
+                  "en/api-reference/scan/scan-jobs",
+                  "en/api-reference/scan/scan-job-create",
+                  "en/api-reference/scan/scan-job",
+                  "en/api-reference/scan/scan-job-cancel",
+                  "en/api-reference/scan/scan-job-delete"
+                ]
+              },
+              {
+                "group": "PDF APIs",
+                "pages": [
+                  "en/api-reference/pdf/pdf-create",
+                  "en/api-reference/pdf/pdf-preview-job-create",
+                  "en/api-reference/pdf/pdf-preview-jobs",
+                  "en/api-reference/pdf/pdf-preview-page-meta",
+                  "en/api-reference/pdf/pdf-preview-page-bmp",
+                  "en/api-reference/pdf/pdf-preview-page-raw",
+                  "en/api-reference/pdf/pdf-preview-job-delete"
+                ]
+              },
+              {
+                "group": "Device Management APIs",
+                "pages": [
+                  "en/api-reference/device/device-status",
+                  "en/api-reference/device/device-status-csv",
+                  "en/api-reference/device/device-slp",
+                  "en/api-reference/device/device-sleep-time"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "Changelog",
+            "groups": [
+              {
+                "group": "Changelog",
+                "pages": [
+                  "en/resources/changelog"
+                ]
+              }
+            ]
+          },
+          {
+            "tab": "FAQ",
+            "groups": [
+              {
+                "group": "FAQ",
+                "pages": [
+                  "en/resources/faq"
+                ]
+              },
+              {
+                "group": "Categories",
+                "pages": [
+                  "en/resources/faq/integration",
+                  "en/resources/faq/search",
+                  "en/resources/faq/print",
+                  "en/resources/faq/scan",
+                  "en/resources/faq/device"
+                ]
+              }
             ]
           }
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
-    }
-  },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
+    ]
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
-    "primary": {
-      "type": "button",
-      "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
-    }
-  },
-  "contextual": {
-    "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+    "links": []
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/"
     }
   }
 }

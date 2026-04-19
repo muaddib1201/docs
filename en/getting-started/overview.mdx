@@ -1,0 +1,102 @@
+---
+title: Overview
+description: A quick introduction to Pantum SDK capabilities, API coverage, and the recommended onboarding path.
+---
+
+## Product Overview
+
+Pantum SDK exposes a unified local HTTP service as its integration entry point, bringing device discovery, printing, scanning, PDF preprocessing, and device management into one consistent interface model. It is designed to speed up integration in both mobile and desktop applications.
+
+<Tip>
+  If this is your first time integrating the SDK, start with [Quickstart](/en/getting-started/quickstart) to get through initialization, service validation, and your first device discovery flow. If you would rather understand the overall capability map first, continue below.
+</Tip>
+
+## Product Advantages
+
+<CardGroup cols={2}>
+  <Card title="Unified Entry Point" icon="server">
+    All capabilities are exposed through a local HTTP service. Once started, you access everything through `http://127.0.0.1:{port}`, which makes debugging, encapsulation, and cross-platform reuse easier.
+  </Card>
+  <Card title="Complete Capability Chain" icon="layer-group">
+    From service metadata, supported models, and device discovery to printing, scanning, PDF preprocessing, and device management, the SDK covers the full mainline workflow from integration to execution.
+  </Card>
+  <Card title="Built Around Real Device Capabilities" icon="sliders">
+    Many interfaces are designed directly around `print_capability`, `scan_capability`, and model compatibility, making it practical to build business parameters dynamically according to device capability.
+  </Card>
+  <Card title="Clear Documentation Structure" icon="compass">
+    The API docs are already split by core capability domain, which works well both for first-time understanding and for locating interfaces quickly during development.
+  </Card>
+</CardGroup>
+
+## API Capability Map
+
+The current API docs are organized into five main capability areas, with supporting references such as error codes and FAQs to round out the integration workflow.
+
+<CardGroup cols={2}>
+  <Card title="Core APIs" icon="sparkles" href="/en/api-reference/core/service-info">
+    7 endpoints covering service information, supported-model queries, and USB and NET device discovery. This is where every integration starts.
+  </Card>
+  <Card title="Print APIs" icon="/images/icons/api-print.svg" href="/en/api-reference/print/print-jobs">
+    7 endpoints covering print job creation, file upload, cancellation, deletion, result lookup, and model-specific print compatibility checks.
+  </Card>
+  <Card title="Scan APIs" icon="/images/icons/api-scan.svg" href="/en/api-reference/scan/scan-jobs">
+    5 endpoints for scan job creation, lookup, cancellation, and deletion. Available parameters depend on the scan capability returned for the selected model.
+  </Card>
+  <Card title="PDF APIs" icon="/images/icons/api-pdf.svg" href="/en/api-reference/pdf/pdf-create">
+    7 endpoints for PDF creation and preview workflows, including page-level metadata, BMP output, and RAW data retrieval.
+  </Card>
+  <Card title="Device Management APIs" icon="gear" href="/en/api-reference/device/device-status">
+    4 endpoints focused on device status, status lists, SLP information, and sleep-time configuration for runtime management and diagnostics.
+  </Card>
+  <Card title="Supporting References" icon="circle-info" href="/en/api-reference/error-codes">
+    Supporting pages include [Error Codes](/en/api-reference/error-codes) and [FAQ](/en/resources/faq), which help troubleshoot initialization, device discovery, and job execution issues.
+  </Card>
+</CardGroup>
+
+## Recommended Reading Path
+
+<Steps>
+  <Step title="Confirm the Service Is Available">
+    Start from [Get Service Info](/en/api-reference/core/service-info) or [Quickstart](/en/getting-started/quickstart) to verify that the SDK has started and the local HTTP service is reachable.
+  </Step>
+  <Step title="Read Supported Capabilities">
+    Review [Supported Device List](/en/api-reference/core/supported-devices) and [Model API Support Matrix (CSV)](/en/api-reference/print/print-model-deps-csv) to confirm the target model and functional boundary.
+  </Step>
+  <Step title="Discover the Target Device">
+    Depending on your scenario, continue with [USB Device List](/en/api-reference/core/usb-devices) or [Start NET Device Search](/en/api-reference/core/net-devices-start) to obtain the connection details required for later calls.
+  </Step>
+  <Step title="Move into Business Capabilities">
+    For printing, continue with [Create Print Job](/en/api-reference/print/print-job-create). For scanning, continue with [Create Scan Job](/en/api-reference/scan/scan-job-create). For PDF preprocessing, continue with [Create Preview Job](/en/api-reference/pdf/pdf-preview-job-create).
+  </Step>
+</Steps>
+
+## Common Entry Points
+
+### First-Time Integration
+
+- [Quickstart](/en/getting-started/quickstart)
+- [Usage Overview](/en/api-reference/overview)
+- [Get Service Info](/en/api-reference/core/service-info)
+
+### Main Print Workflow
+
+- [Supported Device List](/en/api-reference/core/supported-devices)
+- [Start NET Device Search](/en/api-reference/core/net-devices-start)
+- [Create Print Job](/en/api-reference/print/print-job-create)
+- [Upload Print Files](/en/api-reference/print/print-job-patch)
+- [Print Job Result*](/en/api-reference/print/print-job-result)
+
+### Scan and Device Management
+
+- [Create Scan Job](/en/api-reference/scan/scan-job-create)
+- [Get Device Status](/en/api-reference/device/device-status)
+- [Get Device SLP Info (NET only)](/en/api-reference/device/device-slp)
+- [Set Device Sleep Time (USB only)](/en/api-reference/device/device-sleep-time)
+
+## Documentation Structure at a Glance
+
+1. Getting Started: for first-time integrators who want a clear mental model and the shortest path to a successful first call.
+2. API Docs: organized by capability domain for implementation, field lookup, response lookup, and compatibility checks.
+3. Examples and Resources: practical setup references, troubleshooting notes, and release history.
+
+If your goal right now is to get your first successful call working, continue with [Quickstart](/en/getting-started/quickstart). If you would rather start from the interface model, the next best page is [Usage Overview](/en/api-reference/overview).

@@ -1,0 +1,13 @@
+---
+title: 传入打印文件
+description: 向指定打印作业传入图片或 PDF 文件，支持边打印边传入。
+openapi: openapi/onesdk-core.yaml POST /print/{job_id}/patch
+---
+
+<Note>
+  图片格式支持：BMP、JPEG、PNG。传入空数组 `[]` 表示结束传入文件。
+</Note>
+
+<Warning>
+  `e_model_series_inkjet_6108` 系列机型只有在传入空数组（结束传入）后才会开始打印。
+</Warning>

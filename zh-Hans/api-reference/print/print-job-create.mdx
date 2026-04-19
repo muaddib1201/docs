@@ -1,0 +1,9 @@
+---
+title: 创建打印作业
+description: 创建一个打印作业，支持图片与 PDF 两种打印类型。
+openapi: openapi/onesdk-core.yaml POST /print
+---
+
+<Note>
+  由于接口设计支持边打印、边传入文件，在传入文件结束前无法计算有效进度，`job_info.progress` 的值将保持为 `0`。
+</Note>

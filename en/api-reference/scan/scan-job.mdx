@@ -1,0 +1,13 @@
+---
+title: Scan Job
+description: Get the status, settings, and scanned-file list of a specified scan job. Supports both blocking and streaming responses.
+openapi: openapi/onesdk-core.yaml GET /scan/{job_id}
+---
+
+<Note>
+  This is a blocking call and remains blocked until the job ends. You can set the `Accept: text/event-stream` request header to receive real-time progress updates through SSE streaming.
+</Note>
+
+<Note>
+  `job_progress.progress` indicates the data reception progress of the current page (0-100).
+</Note>
