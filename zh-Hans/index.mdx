@@ -1,60 +1,57 @@
 ---
 title: Pantum SDK 文档
-description: Pantum SDK 接入总览、平台分层与文档导航入口。
+description: Pantum SDK 文档站入口，覆盖接入指南、示例工程、API 参考与支持资源。
 ---
 
 # Pantum SDK 文档
 
 欢迎来到 Pantum SDK 文档站。
 
-Pantum SDK 当前建议先按设备类型进入，再细分到具体操作系统：
+中文文档按照团队在落地 SDK 时的实际路径组织：
 
-- 移动设备：Android、开源鸿蒙
-- PC 平台：Windows、国产系统
+- 先看接入指南，建立整体认知
+- 再通过示例工程跑通一个完整环境
+- 进入业务开发后使用 API 文档查字段与返回值
+- 排障与版本跟踪交给常见问题与更新日志
 
-这样的组织方式更符合 SDK 文档的实际查找路径：开发者通常会先确认项目是运行在移动设备还是 PC 平台，再进一步确认具体操作系统，最后进入安装、初始化、设备发现、打印任务等能力文档。
+这样在第一次接入时路径最短，在日常开发与调试中仍能快速定位 API 细节。
 
 ## 推荐阅读路径
 
-### 先确认平台
+### 先从接入指南开始
 
-如果你还在梳理方案，先看 [平台总览](/platforms/overview)。
+如果你是第一次接入 SDK，从这里起步：
 
-如果你已经明确设备类型，建议从一级平台页进入：
+- [概览](/zh-Hans/getting-started/overview)
+- [快速开始](/zh-Hans/getting-started/quickstart)
 
-- [移动设备 - 概览](/platforms/mobile)
-- [PC 平台 - 概览](/platforms/pc)
+### 再看示例工程
 
-如果你已经明确具体系统，也可以直接进入对应页面：
+需要按平台确认完整接入步骤，可继续阅读：
 
-- [Android](/platforms/android)
-- [开源鸿蒙](/platforms/openharmony)
-- [Windows](/platforms/windows)
-- [国产系统](/platforms/domestic)
+- [示例工程](/zh-Hans/getting-started/examples)
+- [Android Demo](/zh-Hans/getting-started/examples/android)
+- [OpenHarmony Demo](/zh-Hans/getting-started/examples/openharmony)
+- [国产系统 Demo](/zh-Hans/getting-started/examples/domestic)
 
-### 再完成基础接入
+### 最后进入 API 文档
 
-从安装、初始化、首个打印任务开始，先跑通一条最短路径：
+服务跑通后，日常开发主要查阅 API 文档：
 
-- [安装](/installation/overview)
-- [快速开始](/getting-started/quickstart)
-
-### 最后按能力深入
-
-当平台接入跑通后，再进入核心能力与 API 参考：
-
-- [设备发现](/sdk/device-discovery)
-- [打印任务](/sdk/print-jobs)
-- [状态事件](/sdk/status-events)
-- [API 概览](/api-reference/overview)
+- [使用概述](/zh-Hans/api-reference/overview)
+- [核心 API](/zh-Hans/api-reference/core/service-info)
+- [打印 API](/zh-Hans/api-reference/print/print-jobs)
+- [扫描 API](/zh-Hans/api-reference/scan/scan-jobs)
+- [PDF API](/zh-Hans/api-reference/pdf/pdf-create)
+- [设备管理 API](/zh-Hans/api-reference/device/device-status)
 
 ## 当前文档结构
 
-1. 开始使用：面向第一次接入的开发者
-2. 平台接入：面向需要先按设备类型、再按系统定位内容的开发者
-3. 核心能力：面向已经完成初始化的开发者
-4. API 参考：面向需要查字段、查返回值的开发者
+1. 开始使用：面向第一次接入 SDK 的团队
+2. 示例工程：面向需要按平台完成接入与验证的开发者
+3. API 文档：面向实施、联调与查字段的场景
+4. 资源：常见问题、排障笔记与更新日志
 
 ## 当前状态
 
-当前工程已经补齐平台维度的信息架构，后续可以继续在各平台页中逐步替换为真实 SDK 包名、依赖方式、接口差异、兼容版本与示例代码。
+中文文档与英文文档已按页对齐，后续会继续补充版本差异、兼容性说明与更细粒度的实施示例。

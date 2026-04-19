@@ -8,7 +8,7 @@ description: 快速了解 Pantum SDK 的能力边界、API 版图与推荐接入
 Pantum SDK 以本地 HTTP 服务为统一接入入口，将设备发现、打印、扫描、PDF 预处理与设备管理能力收敛到一套一致的接口体系中，适合在移动端与 PC 端应用中快速完成集成。
 
 <Tip>
-  如果你是第一次接入，推荐先阅读 [快速开始](/getting-started/quickstart)，跑通初始化、服务校验与首次设备发现；如果你需要先判断能力边界，再继续查看下方 API 能力版图。
+  如果你是第一次接入，推荐先阅读 [快速开始](/zh-Hans/getting-started/quickstart)，跑通初始化、服务校验与首次设备发现；如果你需要先判断能力边界，再继续查看下方 API 能力版图。
 </Tip>
 
 ## 产品优势
@@ -33,23 +33,23 @@ Pantum SDK 以本地 HTTP 服务为统一接入入口，将设备发现、打印
 当前 API 文档围绕 5 个主能力域展开，外加错误码与 FAQ 等辅助内容，已经形成较完整的接入参考体系。
 
 <CardGroup cols={2}>
-  <Card title="核心 API" icon="sparkles" href="/api-reference/core/service-info">
+  <Card title="核心 API" icon="sparkles" href="/zh-Hans/api-reference/core/service-info">
     7 个接口，负责服务信息读取、支持机型查询、USB 与 NET 设备发现，是所有业务调用的起点。
   </Card>
-  <Card title="打印 API" icon="/images/icons/api-print.svg" href="/api-reference/print/print-jobs">
+  <Card title="打印 API" icon="/images/icons/api-print.svg" href="/zh-Hans/api-reference/print/print-jobs">
     7 个接口，覆盖打印作业创建、文件传输、取消、删除、结果查询，以及机型打印能力兼容性确认。
   </Card>
-  <Card title="扫描 API" icon="/images/icons/api-scan.svg" href="/api-reference/scan/scan-jobs">
+  <Card title="扫描 API" icon="/images/icons/api-scan.svg" href="/zh-Hans/api-reference/scan/scan-jobs">
     5 个接口，提供扫描作业的创建、查询、取消与删除，参数设置依赖机型扫描能力返回值。
   </Card>
-  <Card title="PDF API" icon="/images/icons/api-pdf.svg" href="/api-reference/pdf/pdf-create">
+  <Card title="PDF API" icon="/images/icons/api-pdf.svg" href="/zh-Hans/api-reference/pdf/pdf-create">
     7 个接口，用于 PDF 创建与预览任务处理，支持页级元数据、BMP 与 RAW 数据获取。
   </Card>
-  <Card title="设备管理 API" icon="gear" href="/api-reference/device/device-status">
+  <Card title="设备管理 API" icon="gear" href="/zh-Hans/api-reference/device/device-status">
     4 个接口，聚焦设备状态、状态列表、SLP 信息与休眠时间配置，面向运行态管理与诊断。
   </Card>
-  <Card title="辅助参考" icon="circle-info" href="/api-reference/error-codes">
-    配套提供 [错误码](/api-reference/error-codes) 与 [常见问题](/resources/faq)，便于排查初始化、发现设备与任务执行问题。
+  <Card title="辅助参考" icon="circle-info" href="/zh-Hans/api-reference/error-codes">
+    配套提供 [错误码](/zh-Hans/api-reference/error-codes) 与 [常见问题](/zh-Hans/resources/faq)，便于排查初始化、发现设备与任务执行问题。
   </Card>
 </CardGroup>
 
@@ -57,16 +57,16 @@ Pantum SDK 以本地 HTTP 服务为统一接入入口，将设备发现、打印
 
 <Steps>
   <Step title="确认服务可用">
-    从 [查询服务信息](/api-reference/core/service-info) 或 [快速开始](/getting-started/quickstart) 开始，先确认 SDK 已启动，本地 HTTP 服务可访问。
+    从 [查询服务信息](/zh-Hans/api-reference/core/service-info) 或 [快速开始](/zh-Hans/getting-started/quickstart) 开始，先确认 SDK 已启动，本地 HTTP 服务可访问。
   </Step>
   <Step title="读取支持能力">
-    阅读 [支持设备列表](/api-reference/core/supported-devices) 与 [机型接口支持情况（CSV）](/api-reference/print/print-model-deps-csv)，确认目标机型与功能边界。
+    阅读 [支持设备列表](/zh-Hans/api-reference/core/supported-devices) 与 [机型接口支持情况（CSV）](/zh-Hans/api-reference/print/print-model-deps-csv)，确认目标机型与功能边界。
   </Step>
   <Step title="发现目标设备">
-    根据接入场景进入 [USB设备列表](/api-reference/core/usb-devices) 或 [开始 NET 设备搜索](/api-reference/core/net-devices-start)，拿到后续调用所需的设备连接信息。
+    根据接入场景进入 [USB设备列表](/zh-Hans/api-reference/core/usb-devices) 或 [开始 NET 设备搜索](/zh-Hans/api-reference/core/net-devices-start)，拿到后续调用所需的设备连接信息。
   </Step>
   <Step title="进入业务能力">
-    打印场景继续查看 [创建打印作业](/api-reference/print/print-job-create)，扫描场景继续查看 [创建扫描作业](/api-reference/scan/scan-job-create)，PDF 预处理场景进入 [创建预览作业](/api-reference/pdf/pdf-preview-job-create)。
+    打印场景继续查看 [创建打印作业](/zh-Hans/api-reference/print/print-job-create)，扫描场景继续查看 [创建扫描作业](/zh-Hans/api-reference/scan/scan-job-create)，PDF 预处理场景进入 [创建预览作业](/zh-Hans/api-reference/pdf/pdf-preview-job-create)。
   </Step>
 </Steps>
 
@@ -74,24 +74,24 @@ Pantum SDK 以本地 HTTP 服务为统一接入入口，将设备发现、打印
 
 ### 首次接入
 
-- [快速开始](/getting-started/quickstart)
-- [使用概述](/api-reference/overview)
-- [查询服务信息](/api-reference/core/service-info)
+- [快速开始](/zh-Hans/getting-started/quickstart)
+- [使用概述](/zh-Hans/api-reference/overview)
+- [查询服务信息](/zh-Hans/api-reference/core/service-info)
 
 ### 打印主链路
 
-- [支持设备列表](/api-reference/core/supported-devices)
-- [开始 NET 设备搜索](/api-reference/core/net-devices-start)
-- [创建打印作业](/api-reference/print/print-job-create)
-- [传入打印文件](/api-reference/print/print-job-patch)
-- [打印作业结果*](/api-reference/print/print-job-result)
+- [支持设备列表](/zh-Hans/api-reference/core/supported-devices)
+- [开始 NET 设备搜索](/zh-Hans/api-reference/core/net-devices-start)
+- [创建打印作业](/zh-Hans/api-reference/print/print-job-create)
+- [传入打印文件](/zh-Hans/api-reference/print/print-job-patch)
+- [打印作业结果*](/zh-Hans/api-reference/print/print-job-result)
 
 ### 扫描与设备管理
 
-- [创建扫描作业](/api-reference/scan/scan-job-create)
-- [获取设备状态](/api-reference/device/device-status)
-- [获取设备 SLP 信息（仅 NET）](/api-reference/device/device-slp)
-- [设置设备休眠时间（仅 USB）](/api-reference/device/device-sleep-time)
+- [创建扫描作业](/zh-Hans/api-reference/scan/scan-job-create)
+- [获取设备状态](/zh-Hans/api-reference/device/device-status)
+- [获取设备 SLP 信息（仅 NET）](/zh-Hans/api-reference/device/device-slp)
+- [设置设备休眠时间（仅 USB）](/zh-Hans/api-reference/device/device-sleep-time)
 
 ## 文档结构一览
 
@@ -99,4 +99,4 @@ Pantum SDK 以本地 HTTP 服务为统一接入入口，将设备发现、打印
 2. API 文档：按能力域组织接口，适合联调、查字段、查返回值与核对兼容性。
 3. 平台与安装：帮助按设备类型与操作系统确认接入前提、依赖方式与部署路径。
 
-如果你已经明确当前目标是“先打通第一次调用”，继续进入 [快速开始](/getting-started/quickstart)；如果你想先从接口体系整体入手，建议下一步阅读 [使用概述](/api-reference/overview)。
+如果你已经明确当前目标是“先打通第一次调用”，继续进入 [快速开始](/zh-Hans/getting-started/quickstart)；如果你想先从接口体系整体入手，建议下一步阅读 [使用概述](/zh-Hans/api-reference/overview)。
